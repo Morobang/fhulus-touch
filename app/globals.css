@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 /* LUXE THEME - dark & gold */
 :root[data-theme='luxe'] {
