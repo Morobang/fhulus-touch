@@ -178,7 +178,7 @@ export default function AdminBookings() {
                           Cancel
                         </button>
                       )}
-                      
+                      <a
                         href={`https://wa.me/${b.client_phone.replace(/\s/g, '').replace(/^0/, '27')}?text=${encodeURIComponent(`Hi ${b.client_name}, this is Fhulu confirming your ${b.services?.name} appointment on ${b.booking_date} at ${b.booking_time?.slice(0, 5)} at our ${b.locations?.area} location. See you then! 💛`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
