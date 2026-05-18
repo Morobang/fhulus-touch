@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import { Clock, MessageCircle, Scissors, Paintbrush, Sparkles, Home, Plus } from 'lucide-react'
 
@@ -12,6 +13,7 @@ interface Service {
   price: number
   duration_min: number
   description?: string | null
+  photo_path: string | null
 }
 
 function categoryMeta(cat: string) {
@@ -35,6 +37,11 @@ function formatDuration(mins: number) {
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return m > 0 ? `${h}h ${m}min` : `${h}h`
+}
+
+const getPublicUrl = (path: string) => {
+  const { data } = supabase.storage.from('gallery').getPublicUrl(path)
+  return data.publicUrl
 }
 
 export default function ServicesPage() {
@@ -141,7 +148,7 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {items.map((s) => (
+                  {items.map((s, si) => (
                     <div
                       key={s.id}
                       style={{
@@ -150,23 +157,46 @@ export default function ServicesPage() {
                       }}
                       className="rounded-2xl overflow-hidden hover:border-[var(--accent)] hover:-translate-y-1 transition-all duration-200 flex flex-col"
                     >
-                      {/* Visual top — category gradient */}
-                      <div
-                        style={{ background: gradient }}
-                        className="h-32 flex items-center justify-center relative"
-                      >
-                        <Icon size={44} color="rgba(255,255,255,0.25)" />
+                      {/* Visual top — photo or gradient fallback */}
+                      {s.photo_path ? (
+                        <div className="h-56 relative overflow-hidden">
+                          <Image
+                            src={getPublicUrl(s.photo_path)}
+                            alt={s.name}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            priority={si === 0}
+                          />
+                          <div
+                            className="absolute inset-0"
+                            style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 100%)' }}
+                          />
+                          <span
+                            style={{ background: 'rgba(0,0,0,0.4)', color: '#fff', backdropFilter: 'blur(4px)' }}
+                            className="absolute bottom-3 left-4 text-xs px-2 py-1 rounded-full tracking-wide"
+                          >
+                            {category}
+                          </span>
+                        </div>
+                      ) : (
                         <div
-                          className="absolute inset-0"
-                          style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.25) 100%)' }}
-                        />
-                        <span
-                          style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}
-                          className="absolute bottom-3 left-4 text-xs px-2 py-1 rounded-full tracking-wide"
+                          style={{ background: gradient }}
+                          className="h-56 flex items-center justify-center relative"
                         >
-                          {category}
-                        </span>
-                      </div>
+                          <Icon size={44} color="rgba(255,255,255,0.25)" />
+                          <div
+                            className="absolute inset-0"
+                            style={{ background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.25) 100%)' }}
+                          />
+                          <span
+                            style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}
+                            className="absolute bottom-3 left-4 text-xs px-2 py-1 rounded-full tracking-wide"
+                          >
+                            {category}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Details */}
                       <div className="p-5 flex flex-col flex-1">

@@ -8,6 +8,7 @@ interface Photo {
   storage_path: string
   category: string
   caption: string
+  description: string | null
   is_featured: boolean
 }
 
@@ -118,14 +119,34 @@ export default function GalleryPage() {
                   alt={photo.caption || photo.category}
                   className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity" />
-                <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform">
-                  <span
-                    style={{ background: 'rgba(0,0,0,0.6)', color: '#fff' }}
-                    className="text-xs px-2 py-1 rounded"
-                  >
-                    {photo.caption || photo.category}
-                  </span>
+                <div
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: 'rgba(0,0,0,0.6)' }}
+                >
+                  {activeCategory === 'All' && (
+                    <span
+                      style={{ color: '#C2185B', letterSpacing: '0.16em' }}
+                      className="text-lg font-bold uppercase text-center"
+                    >
+                      {photo.category}
+                    </span>
+                  )}
+                  {photo.caption && (
+                    <span
+                      style={{ color: '#F48FB1' }}
+                      className="text-sm font-semibold text-center leading-snug"
+                    >
+                      {photo.caption}
+                    </span>
+                  )}
+                  {photo.description && (
+                    <span
+                      style={{ color: 'rgba(255,255,255,0.8)' }}
+                      className="text-xs text-center leading-relaxed"
+                    >
+                      {photo.description}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

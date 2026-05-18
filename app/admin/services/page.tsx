@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
-import { Plus, Pencil, Trash2, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Eye, EyeOff, CheckCircle, ImagePlus } from 'lucide-react'
 
 interface Service {
   id: string
@@ -11,6 +12,7 @@ interface Service {
   price: number
   duration_min: number | null
   is_visible: boolean
+  photo_path: string | null
 }
 
 const EMPTY = { name: '', category: 'Braids', price: '', duration_min: '', description: '' }
@@ -19,10 +21,19 @@ export default function AdminServices() {
   const [services, setServices] = useState<Service[]>([])
   const [form, setForm] = useState<typeof EMPTY>(EMPTY)
   const [editing, setEditing] = useState<string | null>(null)
+  const [currentPhotoPath, setCurrentPhotoPath] = useState<string | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const getPublicUrl = (path: string) => {
+    const { data } = supabase.storage.from('gallery').getPublicUrl(path)
+    return data.publicUrl
+  }
 
   const fetchServices = async () => {
     const { data, error: fetchError } = await supabase
@@ -37,6 +48,13 @@ export default function AdminServices() {
 
   useEffect(() => { fetchServices() }, [])
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPhotoFile(file)
+    setPhotoPreview(URL.createObjectURL(file))
+  }
+
   const handleSave = async () => {
     if (!form.name.trim()) { setError('Service name is required.'); return }
     if (!form.price) { setError('Price is required.'); return }
@@ -45,12 +63,29 @@ export default function AdminServices() {
     setError('')
     setSaved(false)
 
+    let photo_path = currentPhotoPath
+
+    if (photoFile) {
+      const ext = photoFile.name.split('.').pop()
+      const path = `services/${Date.now()}.${ext}`
+      const { error: storageError } = await supabase.storage
+        .from('gallery')
+        .upload(path, photoFile, { upsert: true })
+      if (storageError) {
+        setError('Photo upload failed: ' + storageError.message)
+        setSaving(false)
+        return
+      }
+      photo_path = path
+    }
+
     const payload = {
       name: form.name.trim(),
       category: form.category.trim() || 'Hair',
       price: Number(form.price),
       duration_min: form.duration_min ? Number(form.duration_min) : 0,
       description: form.description.trim() || null,
+      photo_path,
     }
 
     const { error: dbError } = editing
@@ -65,6 +100,9 @@ export default function AdminServices() {
 
     setForm(EMPTY)
     setEditing(null)
+    setCurrentPhotoPath(null)
+    setPhotoFile(null)
+    setPhotoPreview(null)
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
@@ -86,6 +124,9 @@ export default function AdminServices() {
     setEditing(s.id)
     setError('')
     setSaved(false)
+    setPhotoFile(null)
+    setPhotoPreview(null)
+    setCurrentPhotoPath(s.photo_path ?? null)
     setForm({
       name: s.name,
       category: s.category,
@@ -133,71 +174,70 @@ export default function AdminServices() {
           ) : services.length === 0 ? (
             <div
               style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}
-              className="rounded-xl py-16 text-center text-sm"
+              className="rounded-xl py-12 text-center text-sm"
             >
-              No services yet — add your first one using the form.
+              No services yet — add one using the form.
             </div>
           ) : (
-            Object.entries(grouped).map(([category, items]) => (
-              <div key={category} className="mb-8">
-                <div
-                  style={{ color: 'var(--accent)', letterSpacing: '0.14em', borderBottom: '1px solid var(--border)' }}
-                  className="text-xs font-medium mb-3 pb-3"
-                >
-                  {category.toUpperCase()}
-                </div>
-                {items.map((s) => (
+            <div
+              style={{ border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}
+            >
+              {Object.entries(grouped).map(([category, items], gi) => (
+                <div key={category}>
                   <div
-                    key={s.id}
                     style={{
-                      background: editing === s.id ? 'var(--bg-secondary)' : 'var(--surface)',
-                      border: editing === s.id ? '1px solid var(--accent)' : '1px solid var(--border)',
-                      opacity: s.is_visible ? 1 : 0.55,
+                      background: 'var(--bg-secondary)',
+                      borderTop: gi > 0 ? '1px solid var(--border)' : undefined,
+                      color: 'var(--text-muted)',
+                      letterSpacing: '0.12em',
                     }}
-                    className="flex items-center justify-between px-5 py-4 rounded-lg mb-2 transition-all"
+                    className="px-4 py-2 text-xs font-medium"
                   >
-                    <div>
-                      <div style={{ color: 'var(--text)' }} className="text-sm font-medium">
-                        {s.name}
-                      </div>
-                      <div style={{ color: 'var(--text-muted)' }} className="text-xs mt-0.5">
-                        R{s.price}
-                        {s.duration_min ? ` · ${s.duration_min} min` : ''}
-                        {!s.is_visible && (
-                          <span style={{ color: 'var(--accent)', marginLeft: 8 }}>hidden</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => toggleVisible(s.id, s.is_visible)}
-                        title={s.is_visible ? 'Hide' : 'Show'}
-                        style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                        className="p-2 rounded-md hover:text-[var(--text)] transition-colors"
-                      >
-                        {s.is_visible ? <EyeOff size={14} /> : <Eye size={14} />}
-                      </button>
-                      <button
-                        onClick={() => startEdit(s)}
-                        title="Edit"
-                        style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                        className="p-2 rounded-md hover:text-[var(--text)] transition-colors"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(s.id)}
-                        title="Delete"
-                        style={{ background: '#e85a5a18', color: '#e85a5a', border: '1px solid #e85a5a33' }}
-                        className="p-2 rounded-md"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
+                    {category.toUpperCase()}
                   </div>
-                ))}
-              </div>
-            ))
+                  {items.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => startEdit(s)}
+                      style={{
+                        background: editing === s.id ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)',
+                        borderTop: '1px solid var(--border)',
+                        borderLeft: editing === s.id ? '3px solid var(--accent)' : '3px solid transparent',
+                        opacity: s.is_visible ? 1 : 0.5,
+                        cursor: 'pointer',
+                      }}
+                      className="flex items-center justify-between px-4 py-3 hover:bg-[var(--bg-secondary)] transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span style={{ color: 'var(--text)' }} className="text-sm">{s.name}</span>
+                        <span style={{ color: 'var(--text-muted)' }} className="text-xs ml-3">
+                          R{s.price}{s.duration_min ? ` · ${s.duration_min} min` : ''}
+                          {!s.is_visible && <span style={{ color: 'var(--accent)' }} className="ml-2">hidden</span>}
+                        </span>
+                      </div>
+                      <div className="flex gap-1 ml-3" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => toggleVisible(s.id, s.is_visible)}
+                          title={s.is_visible ? 'Hide' : 'Show'}
+                          style={{ color: 'var(--text-muted)' }}
+                          className="p-1.5 rounded hover:text-[var(--text)] transition-colors"
+                        >
+                          {s.is_visible ? <EyeOff size={13} /> : <Eye size={13} />}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(s.id)}
+                          title="Delete"
+                          style={{ color: '#e85a5a' }}
+                          className="p-1.5 rounded"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -273,13 +313,46 @@ export default function AdminServices() {
           </label>
           <input
             style={inputStyle}
-            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-6 focus:border-[var(--accent)]"
+            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4 focus:border-[var(--accent)]"
             placeholder="e.g. 180"
             type="number"
             min="0"
             value={form.duration_min}
             onChange={(e) => setForm({ ...form, duration_min: e.target.value })}
           />
+
+          <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
+            PHOTO <span style={{ fontWeight: 300 }}>— optional</span>
+          </label>
+          {(photoPreview || currentPhotoPath) && (
+            <div className="relative mb-3 rounded-lg overflow-hidden" style={{ height: 160 }}>
+              <Image
+                src={photoPreview ?? getPublicUrl(currentPhotoPath!)}
+                alt="Service photo"
+                fill
+                className="object-cover"
+                sizes="300px"
+              />
+              <button
+                type="button"
+                onClick={() => { setPhotoFile(null); setPhotoPreview(null); setCurrentPhotoPath(null); if (fileRef.current) fileRef.current.value = '' }}
+                style={{ background: 'rgba(0,0,0,0.55)', color: '#fff' }}
+                className="absolute top-2 right-2 text-xs px-2 py-1 rounded"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}
+            className="w-full py-3 rounded-lg text-sm flex items-center justify-center gap-2 hover:border-[var(--accent)] hover:text-[var(--text)] transition-colors mb-6"
+          >
+            <ImagePlus size={15} />
+            {currentPhotoPath || photoPreview ? 'Replace photo' : 'Upload photo'}
+          </button>
 
           {error && (
             <div
@@ -308,7 +381,7 @@ export default function AdminServices() {
             </button>
             {editing && (
               <button
-                onClick={() => { setEditing(null); setForm(EMPTY); setError('') }}
+                onClick={() => { setEditing(null); setForm(EMPTY); setError(''); setCurrentPhotoPath(null); setPhotoFile(null); setPhotoPreview(null) }}
                 style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
                 className="px-4 py-3 rounded-lg text-sm"
               >

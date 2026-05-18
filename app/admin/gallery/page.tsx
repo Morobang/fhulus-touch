@@ -3,13 +3,14 @@
 import { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
-import { Upload, Star, Trash2, AlertCircle, CheckCircle } from 'lucide-react'
+import { Upload, Star, Trash2, AlertCircle, CheckCircle, Pencil, X } from 'lucide-react'
 
 interface Photo {
   id: string
   storage_path: string
   category: string
   caption: string
+  description: string | null
   is_featured: boolean
 }
 
@@ -20,6 +21,9 @@ export default function AdminGallery() {
   const [uploading, setUploading] = useState(false)
   const [category, setCategory] = useState('braids')
   const [caption, setCaption] = useState('')
+  const [description, setDescription] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({ caption: '', description: '' })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState(false)
@@ -72,6 +76,7 @@ export default function AdminGallery() {
       storage_path: path,
       category,
       caption,
+      description: description.trim() || null,
     })
 
     if (insertError) {
@@ -84,6 +89,7 @@ export default function AdminGallery() {
     }
 
     setCaption('')
+    setDescription('')
     if (fileRef.current) fileRef.current.value = ''
     setUploading(false)
     setUploadSuccess(true)
@@ -98,6 +104,20 @@ export default function AdminGallery() {
       .eq('id', id)
     if (err) setError('Could not update: ' + err.message)
     else fetchPhotos()
+  }
+
+  const startEdit = (p: Photo) => {
+    setEditingId(p.id)
+    setEditForm({ caption: p.caption ?? '', description: p.description ?? '' })
+  }
+
+  const handleUpdate = async (id: string) => {
+    const { error: err } = await supabase
+      .from('gallery_photos')
+      .update({ caption: editForm.caption.trim() || null, description: editForm.description.trim() || null })
+      .eq('id', id)
+    if (err) setError('Update failed: ' + err.message)
+    else { setEditingId(null); fetchPhotos() }
   }
 
   const handleDelete = async (id: string, path: string) => {
@@ -176,7 +196,7 @@ export default function AdminGallery() {
           </select>
 
           <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
-            CAPTION <span style={{ fontWeight: 300 }}>(optional)</span>
+            NAME <span style={{ fontWeight: 300 }}>(optional)</span>
           </label>
           <input
             style={inputStyle}
@@ -184,6 +204,17 @@ export default function AdminGallery() {
             placeholder="e.g. Knotless braids with curls"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
+          />
+
+          <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
+            DESCRIPTION <span style={{ fontWeight: 300 }}>(optional)</span>
+          </label>
+          <input
+            style={inputStyle}
+            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4"
+            placeholder="e.g. Hip-length, added colour"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
 
           <div
@@ -250,35 +281,77 @@ export default function AdminGallery() {
                     style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}
                     className="p-3"
                   >
-                    <div style={{ color: 'var(--text)' }} className="text-xs font-medium mb-1 capitalize">
-                      {p.category}
-                    </div>
-                    {p.caption && (
-                      <div style={{ color: 'var(--text-muted)' }} className="text-xs mb-2 truncate">
-                        {p.caption}
+                    {editingId === p.id ? (
+                      <div className="flex flex-col gap-2">
+                        <input
+                          style={inputStyle}
+                          className="w-full px-2 py-1.5 rounded text-xs outline-none focus:border-[var(--accent)]"
+                          placeholder="Name"
+                          value={editForm.caption}
+                          onChange={(e) => setEditForm({ ...editForm, caption: e.target.value })}
+                        />
+                        <input
+                          style={inputStyle}
+                          className="w-full px-2 py-1.5 rounded text-xs outline-none focus:border-[var(--accent)]"
+                          placeholder="Description"
+                          value={editForm.description}
+                          onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdate(p.id)}
+                            style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
+                            className="flex-1 text-xs py-1.5 rounded-md font-medium"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                            className="px-3 py-1.5 rounded-md"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start justify-between gap-1 mb-1">
+                          <div style={{ color: 'var(--text)' }} className="text-xs font-medium capitalize">
+                            {p.caption || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>no name</span>}
+                          </div>
+                          <button onClick={() => startEdit(p)} style={{ color: 'var(--text-muted)' }} className="flex-shrink-0 hover:text-[var(--text)]">
+                            <Pencil size={11} />
+                          </button>
+                        </div>
+                        {p.description && (
+                          <div style={{ color: 'var(--text-muted)' }} className="text-xs mb-2 truncate opacity-70">
+                            {p.description}
+                          </div>
+                        )}
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => toggleFeatured(p.id, p.is_featured)}
+                            style={{
+                              background: p.is_featured ? 'rgba(240,165,0,0.12)' : 'var(--bg)',
+                              color: p.is_featured ? '#f0a500' : 'var(--text-muted)',
+                              border: `1px solid ${p.is_featured ? 'rgba(240,165,0,0.3)' : 'var(--border)'}`,
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1 text-xs py-1.5 rounded-md transition-all"
+                          >
+                            <Star size={12} />
+                            {p.is_featured ? 'Featured' : 'Feature'}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(p.id, p.storage_path)}
+                            style={{ background: 'rgba(232,90,90,0.1)', color: '#e85a5a', border: '1px solid rgba(232,90,90,0.2)' }}
+                            className="px-3 py-1.5 rounded-md"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </>
                     )}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => toggleFeatured(p.id, p.is_featured)}
-                        style={{
-                          background: p.is_featured ? 'rgba(240,165,0,0.12)' : 'var(--bg)',
-                          color: p.is_featured ? '#f0a500' : 'var(--text-muted)',
-                          border: `1px solid ${p.is_featured ? 'rgba(240,165,0,0.3)' : 'var(--border)'}`,
-                        }}
-                        className="flex-1 flex items-center justify-center gap-1 text-xs py-1.5 rounded-md transition-all"
-                      >
-                        <Star size={12} />
-                        {p.is_featured ? 'Featured' : 'Feature'}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(p.id, p.storage_path)}
-                        style={{ background: 'rgba(232,90,90,0.1)', color: '#e85a5a', border: '1px solid rgba(232,90,90,0.2)' }}
-                        className="px-3 py-1.5 rounded-md"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
                   </div>
                 </div>
               ))}

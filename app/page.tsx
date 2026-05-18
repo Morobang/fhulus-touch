@@ -26,6 +26,7 @@ interface Service {
   category: string
   price: number
   duration_min: number
+  photo_path: string | null
 }
 
 interface GalleryPhoto {
@@ -68,7 +69,7 @@ export default function HomePage() {
           .from('services')
           .select('*')
           .eq('is_visible', true)
-          .order('category')
+          .order('created_at', { ascending: false })
           .limit(6),
         supabase
           .from('gallery_photos')
@@ -186,7 +187,7 @@ export default function HomePage() {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((s) => {
+          {services.map((s, i) => {
             const { gradient, Icon } = categoryMeta(s.category)
             return (
               <Link
@@ -195,15 +196,34 @@ export default function HomePage() {
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
                 className="rounded-2xl overflow-hidden hover:border-[var(--accent)] hover:-translate-y-1 transition-all duration-200 flex flex-col"
               >
-                <div style={{ background: gradient }} className="h-24 flex items-center justify-center relative">
-                  <Icon size={36} color="rgba(255,255,255,0.25)" />
-                  <span
-                    style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}
-                    className="absolute bottom-2 left-3 text-xs px-2 py-0.5 rounded-full"
-                  >
-                    {s.category}
-                  </span>
-                </div>
+                {s.photo_path ? (
+                  <div className="h-56 relative overflow-hidden">
+                    <Image
+                      src={getPublicUrl(s.photo_path)}
+                      alt={s.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      priority={i === 0}
+                    />
+                    <span
+                      style={{ background: 'rgba(0,0,0,0.4)', color: '#fff', backdropFilter: 'blur(4px)' }}
+                      className="absolute bottom-2 left-3 text-xs px-2 py-0.5 rounded-full"
+                    >
+                      {s.category}
+                    </span>
+                  </div>
+                ) : (
+                  <div style={{ background: gradient }} className="h-56 flex items-center justify-center relative">
+                    <Icon size={36} color="rgba(255,255,255,0.25)" />
+                    <span
+                      style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}
+                      className="absolute bottom-2 left-3 text-xs px-2 py-0.5 rounded-full"
+                    >
+                      {s.category}
+                    </span>
+                  </div>
+                )}
                 <div className="p-4 sm:p-5 flex items-end justify-between">
                   <div>
                     <div style={{ color: 'var(--text)' }} className="font-medium text-sm mb-0.5">{s.name}</div>
