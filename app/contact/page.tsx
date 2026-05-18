@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { MapPin, Clock, Phone, Mail, MessageCircle, CheckCircle } from 'lucide-react'
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', contact: '', message: '' })
@@ -48,7 +49,7 @@ export default function ContactPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -58,7 +59,7 @@ export default function ContactPage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
         >
           Contact Us
         </h1>
@@ -68,7 +69,7 @@ export default function ContactPage() {
         </p>
       </section>
 
-      <section className="px-12 py-16 grid grid-cols-2 gap-16">
+      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
         {/* LEFT — info */}
         <div>
           <h2
@@ -91,14 +92,14 @@ export default function ContactPage() {
                 {l.area.toUpperCase()}
               </div>
               <div className="flex flex-col gap-3">
-                <div className="flex gap-3">
-                  <span className="text-base">📍</span>
+                <div className="flex gap-3 items-start">
+                  <MapPin size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
                   <span style={{ color: 'var(--text-muted)' }} className="text-sm">
                     {l.address}
                   </span>
                 </div>
-                <div className="flex gap-3">
-                  <span className="text-base">⏰</span>
+                <div className="flex gap-3 items-start">
+                  <Clock size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
                   <span style={{ color: 'var(--text-muted)' }} className="text-sm">
                     {l.hours}
                   </span>
@@ -118,8 +119,8 @@ export default function ContactPage() {
               CONTACT
             </div>
             <div className="flex flex-col gap-3">
-              <div className="flex gap-3">
-                <span className="text-base">📱</span>
+              <div className="flex gap-3 items-start">
+                <Phone size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
                 <div>
                   <div style={{ color: 'var(--text)' }} className="text-sm">
                     076 906 8341
@@ -129,8 +130,8 @@ export default function ContactPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <span className="text-base">✉️</span>
+              <div className="flex gap-3 items-start">
+                <Mail size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
                 <span style={{ color: 'var(--text-muted)' }} className="text-sm">
                   fhulufhelomarubini36@gmail.com
                 </span>
@@ -145,7 +146,7 @@ export default function ContactPage() {
             style={{ background: '#25D366', color: '#fff' }}
             className="flex items-center gap-3 px-6 py-4 rounded-xl text-sm font-medium hover:opacity-88 transition-opacity"
           >
-            <span className="text-xl">💬</span>
+            <MessageCircle size={20} />
             <div>
               <div className="font-medium">WhatsApp Fhulu directly</div>
               <div className="text-xs opacity-80 mt-0.5">Fastest way to reach her</div>
@@ -167,7 +168,7 @@ export default function ContactPage() {
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               className="p-10 rounded-xl text-center"
             >
-              <div className="text-4xl mb-4">✅</div>
+              <CheckCircle size={40} className="mx-auto mb-4" style={{ color: 'var(--accent)' }} />
               <div
                 style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
                 className="text-2xl mb-2"

@@ -32,6 +32,7 @@ export default function LoginPage() {
     }
 
     router.push('/admin')
+    setLoading(false)
   }
 
   const inputStyle = {

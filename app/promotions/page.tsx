@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Gift, MessageCircle } from 'lucide-react'
 
 interface Promotion {
   id: string
@@ -33,7 +34,7 @@ export default function PromotionsPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -43,7 +44,7 @@ export default function PromotionsPage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
         >
           Specials & Promotions
         </h1>
@@ -53,7 +54,7 @@ export default function PromotionsPage() {
       </section>
 
       {/* PROMOTIONS */}
-      <section className="px-12 py-16">
+      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16">
         {loading ? (
           <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-20">
             Loading specials...
@@ -63,7 +64,7 @@ export default function PromotionsPage() {
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             className="rounded-xl p-16 text-center"
           >
-            <div className="text-4xl mb-4">🎁</div>
+            <Gift size={40} className="mx-auto mb-4" style={{ color: 'var(--accent)' }} />
             <div
               style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
               className="text-2xl mb-2"
@@ -78,11 +79,11 @@ export default function PromotionsPage() {
               style={{ background: '#25D366', color: '#fff' }}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium"
             >
-              💬 Follow on WhatsApp
+              <MessageCircle size={16} /> Follow on WhatsApp
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {promotions.map((p) => (
               <div
                 key={p.id}

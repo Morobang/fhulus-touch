@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { MessageCircle } from 'lucide-react'
 
 interface Service {
   id: string
@@ -52,7 +53,7 @@ export default function ServicesPage() {
         background: 'var(--surface)',
         border: '1px solid var(--border)',
       }}
-      className="flex items-center justify-between px-6 py-5 rounded-xl mb-2 hover:border-[var(--accent)] transition-colors group"
+      className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 rounded-xl mb-2 hover:border-[var(--accent)] transition-colors group"
     >
       <div>
         <div style={{ color: 'var(--text)' }} className="font-medium mb-1">
@@ -85,7 +86,7 @@ export default function ServicesPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -95,7 +96,7 @@ export default function ServicesPage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
         >
           Services & Pricing
         </h1>
@@ -105,7 +106,7 @@ export default function ServicesPage() {
       </section>
 
       {/* TABS */}
-      <section className="px-12 pt-10 pb-2">
+      <section className="px-4 sm:px-8 lg:px-12 pt-8 sm:pt-10 pb-2">
         <div className="flex gap-2">
           {(['All', 'Hair', 'Nails'] as const).map((tab) => (
             <button
@@ -125,7 +126,7 @@ export default function ServicesPage() {
       </section>
 
       {/* SERVICES */}
-      <section className="px-12 py-8">
+      <section className="px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
         {loading ? (
           <div style={{ color: 'var(--text-muted)' }} className="text-sm py-12 text-center">
             Loading services...
@@ -174,7 +175,7 @@ export default function ServicesPage() {
       {/* SEED NOTE */}
       <section
         style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}
-        className="px-12 py-10 flex items-center justify-between"
+        className="px-4 sm:px-8 lg:px-12 py-8 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between"
       >
         <div>
           <div
@@ -194,7 +195,7 @@ export default function ServicesPage() {
           style={{ background: '#25D366', color: '#fff' }}
           className="px-6 py-3 rounded-md text-sm font-medium flex items-center gap-2 hover:opacity-88 transition-opacity"
         >
-          💬 WhatsApp Fhulu
+          <MessageCircle size={16} /> WhatsApp Fhulu
         </a>
       </section>
     </div>

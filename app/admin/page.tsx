@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { Calendar, Clock, Users, Image } from 'lucide-react'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -44,10 +45,10 @@ export default function AdminDashboard() {
   }, [])
 
   const statCards = [
-    { label: 'Total Bookings', value: stats.totalBookings, icon: '📅', href: '/admin/bookings' },
-    { label: 'Pending Confirm', value: stats.pendingBookings, icon: '⏳', href: '/admin/bookings' },
-    { label: 'Unique Clients', value: stats.totalClients, icon: '👥', href: '/admin/clients' },
-    { label: 'Gallery Photos', value: stats.totalPhotos, icon: '🖼️', href: '/admin/gallery' },
+    { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, href: '/admin/bookings' },
+    { label: 'Pending Confirm', value: stats.pendingBookings, icon: Clock, href: '/admin/bookings' },
+    { label: 'Unique Clients', value: stats.totalClients, icon: Users, href: '/admin/clients' },
+    { label: 'Gallery Photos', value: stats.totalPhotos, icon: Image, href: '/admin/gallery' },
   ]
 
   const statusColor: Record<string, string> = {
@@ -64,7 +65,7 @@ export default function AdminDashboard() {
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
           className="text-4xl font-light mb-2"
         >
-          Good day, Fhulu 👋
+          Good day, Fhulu
         </h1>
         <p style={{ color: 'var(--text-muted)' }} className="text-sm">
           Here's what's happening at Fhulu's Touch today
@@ -73,14 +74,16 @@ export default function AdminDashboard() {
 
       {/* STAT CARDS */}
       <div className="grid grid-cols-4 gap-4 mb-10">
-        {statCards.map((s) => (
+        {statCards.map((s) => {
+          const Icon = s.icon
+          return (
           <Link
             key={s.label}
             href={s.href}
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             className="p-6 rounded-xl hover:border-[var(--accent)] transition-colors"
           >
-            <div className="text-2xl mb-3">{s.icon}</div>
+            <div className="mb-3" style={{ color: 'var(--accent)' }}><Icon size={20} /></div>
             <div
               style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
               className="text-3xl font-semibold mb-1"
@@ -91,7 +94,8 @@ export default function AdminDashboard() {
               {s.label}
             </div>
           </Link>
-        ))}
+          )
+        })}
       </div>
 
       {/* RECENT BOOKINGS */}

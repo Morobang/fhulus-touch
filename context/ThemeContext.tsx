@@ -10,12 +10,12 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'luxe',
+  theme: 'blossom',
   setTheme: () => {}
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('luxe')
+  const [theme, setThemeState] = useState<Theme>('blossom')
 
   useEffect(() => {
     const saved = localStorage.getItem('fhulu-theme') as Theme

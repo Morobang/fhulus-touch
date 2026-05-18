@@ -1,8 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { Scissors, Paintbrush, Sparkles } from 'lucide-react'
 
 interface Testimonial {
   id: string
@@ -18,41 +20,82 @@ interface Promotion {
   valid_until: string
 }
 
+interface Service {
+  id: string
+  name: string
+  category: string
+  price: number
+  duration_min: number
+}
+
+interface GalleryPhoto {
+  id: string
+  storage_path: string
+  category: string
+  caption: string
+}
+
+function ServiceIcon({ category }: { category: string }) {
+  if (category === 'nails') return <Paintbrush size={22} />
+  return <Scissors size={22} />
+}
+
 export default function HomePage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>([])
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: tData } = await supabase
-        .from('testimonials')
-        .select('*')
-        .eq('is_featured', true)
-        .eq('is_approved', true)
-        .limit(4)
+      const [tRes, pRes, sRes, gRes] = await Promise.all([
+        supabase
+          .from('testimonials')
+          .select('*')
+          .eq('is_featured', true)
+          .eq('is_approved', true)
+          .limit(4),
+        supabase
+          .from('promotions')
+          .select('*')
+          .eq('is_active', true)
+          .limit(3),
+        supabase
+          .from('services')
+          .select('*')
+          .eq('is_visible', true)
+          .order('category')
+          .limit(6),
+        supabase
+          .from('gallery_photos')
+          .select('*')
+          .eq('is_featured', true)
+          .limit(4),
+      ])
 
-      const { data: pData } = await supabase
-        .from('promotions')
-        .select('*')
-        .eq('is_active', true)
-        .limit(3)
-
-      if (tData) setTestimonials(tData)
-      if (pData) setPromotions(pData)
+      if (tRes.data) setTestimonials(tRes.data)
+      if (pRes.data) setPromotions(pRes.data)
+      if (sRes.data) setServices(sRes.data)
+      if (gRes.data) setGalleryPhotos(gRes.data)
     }
 
     fetchData()
   }, [])
+
+  const getPublicUrl = (path: string) => {
+    const { data } = supabase.storage.from('gallery').getPublicUrl(path)
+    return data.publicUrl
+  }
 
   return (
     <div>
       {/* HERO */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-24 relative overflow-hidden"
+        className="px-4 sm:px-8 lg:px-12 py-16 sm:py-20 lg:py-24 relative overflow-hidden"
       >
         <div
-          className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 blur-3xl"
+          className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 rounded-full opacity-10 blur-3xl"
           style={{ background: 'var(--accent)' }}
         />
         <p
@@ -63,30 +106,30 @@ export default function HomePage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-6xl font-light leading-tight mb-6 max-w-2xl"
+          className="text-4xl sm:text-5xl lg:text-6xl font-light leading-tight mb-6 max-w-2xl"
         >
           Where every visit<br />
           leaves you <em style={{ color: 'var(--accent)' }}>glowing</em>
         </h1>
         <p
           style={{ color: 'var(--text-muted)' }}
-          className="text-base max-w-md leading-relaxed mb-10"
+          className="text-sm sm:text-base max-w-md leading-relaxed mb-8 sm:mb-10"
         >
           Premium hair and nail care across Limpopo. Fhulufhelo brings
           professional salon quality to your city — book your slot today.
         </p>
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-3 flex-wrap">
           <Link
             href="/book"
             style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-            className="px-8 py-3 rounded-md text-sm font-medium tracking-wide hover:opacity-85 transition-opacity"
+            className="px-6 sm:px-8 py-3 rounded-md text-sm font-medium tracking-wide hover:opacity-85 transition-opacity"
           >
             Book Appointment
           </Link>
           <Link
             href="/gallery"
             style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-            className="px-8 py-3 rounded-md text-sm hover:text-[var(--text)] transition-colors"
+            className="px-6 sm:px-8 py-3 rounded-md text-sm hover:text-[var(--text)] transition-colors"
           >
             View Our Work
           </Link>
@@ -96,7 +139,7 @@ export default function HomePage() {
       {/* STATS */}
       <section
         style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
-        className="grid grid-cols-4"
+        className="grid grid-cols-2 lg:grid-cols-4"
       >
         {[
           { num: '500+', label: 'HAPPY CLIENTS' },
@@ -106,12 +149,12 @@ export default function HomePage() {
         ].map((s) => (
           <div
             key={s.label}
-            style={{ borderRight: '1px solid var(--border)' }}
-            className="py-8 text-center last:border-r-0"
+            style={{ borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}
+            className="py-6 sm:py-8 text-center last:border-r-0"
           >
             <div
               style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent)' }}
-              className="text-4xl font-semibold"
+              className="text-3xl sm:text-4xl font-semibold"
             >
               {s.num}
             </div>
@@ -126,11 +169,11 @@ export default function HomePage() {
       </section>
 
       {/* SERVICES TEASER */}
-      <section className="px-12 py-16">
-        <div className="mb-10">
+      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16">
+        <div className="mb-8 sm:mb-10">
           <h2
             style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-            className="text-4xl font-light mb-3"
+            className="text-3xl sm:text-4xl font-light mb-3"
           >
             What We Do
           </h2>
@@ -138,40 +181,35 @@ export default function HomePage() {
             Hair and nails done right — every time
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { title: 'Knotless Braids', cat: 'Hair', price: 'From R450', emoji: '💆‍♀️' },
-            { title: 'Gel Nails', cat: 'Nails', price: 'From R280', emoji: '💅' },
-            { title: 'Locs Retwist', cat: 'Hair', price: 'From R200', emoji: '✨' },
-            { title: 'Silk Press', cat: 'Hair', price: 'From R350', emoji: '🌟' },
-            { title: 'Nail Art', cat: 'Nails', price: 'From R15/nail', emoji: '🎨' },
-            { title: 'Colour & Highlights', cat: 'Hair', price: 'From R600', emoji: '🌈' },
-          ].map((s) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {services.map((s) => (
             <div
-              key={s.title}
+              key={s.id}
               style={{
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
               }}
-              className="p-6 rounded-xl hover:border-[var(--accent)] transition-colors cursor-pointer"
+              className="p-5 sm:p-6 rounded-xl hover:border-[var(--accent)] transition-colors cursor-pointer"
             >
-              <div className="text-2xl mb-3">{s.emoji}</div>
+              <div className="mb-3" style={{ color: 'var(--accent)' }}>
+                <ServiceIcon category={s.category} />
+              </div>
               <div
                 style={{ fontSize: '10px', color: 'var(--accent)', letterSpacing: '0.12em' }}
                 className="font-medium mb-1"
               >
-                {s.cat.toUpperCase()}
+                {s.category.toUpperCase()}
               </div>
               <div style={{ color: 'var(--text)' }} className="font-medium mb-1">
-                {s.title}
+                {s.name}
               </div>
               <div style={{ color: 'var(--text-muted)' }} className="text-sm">
-                {s.price}
+                From R{s.price}
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           <Link
             href="/services"
             style={{ color: 'var(--accent)', borderBottom: '1px solid var(--accent)' }}
@@ -186,15 +224,15 @@ export default function HomePage() {
       {promotions.length > 0 && (
         <section
           style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}
-          className="px-12 py-16"
+          className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
         >
           <h2
             style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-            className="text-4xl font-light mb-10"
+            className="text-3xl sm:text-4xl font-light mb-8 sm:mb-10"
           >
             Current Specials
           </h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {promotions.map((p) => (
               <div
                 key={p.id}
@@ -202,7 +240,7 @@ export default function HomePage() {
                   background: 'var(--surface)',
                   border: '1px solid var(--accent)',
                 }}
-                className="p-6 rounded-xl"
+                className="p-5 sm:p-6 rounded-xl"
               >
                 <div
                   style={{ color: 'var(--accent)', fontFamily: 'var(--font-serif)' }}
@@ -225,12 +263,12 @@ export default function HomePage() {
       )}
 
       {/* GALLERY TEASER */}
-      <section className="px-12 py-16">
-        <div className="flex items-end justify-between mb-8">
+      <section className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16">
+        <div className="flex items-end justify-between mb-6 sm:mb-8">
           <div>
             <h2
               style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-              className="text-4xl font-light mb-2"
+              className="text-3xl sm:text-4xl font-light mb-2"
             >
               Recent Work
             </h2>
@@ -241,52 +279,65 @@ export default function HomePage() {
           <Link
             href="/gallery"
             style={{ color: 'var(--accent)', borderBottom: '1px solid var(--accent)' }}
-            className="text-sm pb-1"
+            className="text-sm pb-1 whitespace-nowrap"
           >
-            View full gallery →
+            View gallery →
           </Link>
         </div>
-        <div className="grid grid-cols-4 gap-3">
-          {[
-            { label: 'Knotless Braids', bg: 'linear-gradient(135deg,#c9a84c33,#e8d5a3)' },
-            { label: 'Gel Nails', bg: 'linear-gradient(135deg,#ddd0ee,#b8a0d8)' },
-            { label: 'Silk Press', bg: 'linear-gradient(135deg,#e0eae8,#a4c4c0)' },
-            { label: 'Nail Art', bg: 'linear-gradient(135deg,#ffd0c0,#ffb090)' },
-          ].map((g) => (
-            <div
-              key={g.label}
-              style={{ background: g.bg }}
-              className="aspect-square rounded-xl flex items-end p-3 cursor-pointer hover:scale-95 transition-transform"
-            >
-              <span
-                style={{ background: 'rgba(0,0,0,0.5)', color: '#fff' }}
-                className="text-xs px-2 py-1 rounded"
+        {galleryPhotos.length > 0 ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {galleryPhotos.map((g) => (
+              <div
+                key={g.id}
+                className="aspect-square rounded-xl overflow-hidden relative cursor-pointer hover:scale-95 transition-transform"
               >
-                {g.label}
-              </span>
-            </div>
-          ))}
-        </div>
+                <Image
+                  src={getPublicUrl(g.storage_path)}
+                  alt={g.caption || g.category}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, 25vw"
+                />
+                <span
+                  style={{ background: 'rgba(0,0,0,0.5)', color: '#fff' }}
+                  className="absolute bottom-2 left-2 text-xs px-2 py-1 rounded"
+                >
+                  {g.caption || g.category}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+            className="rounded-xl py-16 text-center"
+          >
+            <Sparkles size={32} className="mx-auto mb-3" style={{ color: 'var(--accent)' }} />
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+              Gallery photos coming soon
+            </p>
+          </div>
+        )}
       </section>
 
       {/* TESTIMONIALS */}
       {testimonials.length > 0 && (
         <section
           style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}
-          className="px-12 py-16"
+          className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
         >
           <h2
             style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-            className="text-4xl font-light mb-10"
+            className="text-3xl sm:text-4xl font-light mb-8 sm:mb-10"
           >
             What Our Clients Say
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {testimonials.map((t) => (
               <div
                 key={t.id}
                 style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                className="p-6 rounded-xl"
+                className="p-5 sm:p-6 rounded-xl"
               >
                 <div style={{ color: 'var(--accent)' }} className="text-sm mb-3">
                   {'★'.repeat(t.rating)}
@@ -312,62 +363,28 @@ export default function HomePage() {
       {/* CTA */}
       <section
         style={{ background: 'var(--accent)' }}
-        className="px-12 py-16 text-center"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16 text-center"
       >
         <h2
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent-fg)' }}
-          className="text-4xl font-light mb-4"
+          className="text-3xl sm:text-4xl font-light mb-4"
         >
           Ready to book your appointment?
         </h2>
         <p
           style={{ color: 'var(--accent-fg)', opacity: 0.8 }}
-          className="text-sm mb-8"
+          className="text-sm mb-6 sm:mb-8"
         >
           Available in Polokwane and Mokopane — no account needed
         </p>
         <Link
           href="/book"
           style={{ background: 'var(--accent-fg)', color: 'var(--accent)' }}
-          className="px-10 py-3 rounded-md text-sm font-semibold tracking-wide hover:opacity-90 transition-opacity inline-block"
+          className="px-8 sm:px-10 py-3 rounded-md text-sm font-semibold tracking-wide hover:opacity-90 transition-opacity inline-block"
         >
           Book Now
         </Link>
       </section>
-
-      {/* FOOTER */}
-      <footer
-        style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}
-        className="px-12 py-10 flex justify-between items-center"
-      >
-        <div>
-          <div
-            style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent)' }}
-            className="text-lg font-semibold mb-1"
-          >
-            Fhulu's Touch
-          </div>
-          <div style={{ color: 'var(--text-muted)' }} className="text-xs">
-            Hair & Nails · Polokwane & Mokopane
-          </div>
-        </div>
-        <div className="flex gap-6">
-          {['Services', 'Gallery', 'About', 'Contact', 'Book'].map((l) => (
-            <Link
-              key={l}
-              href={`/${l.toLowerCase()}`}
-              style={{ color: 'var(--text-muted)' }}
-              className="text-xs hover:text-[var(--text)] transition-colors"
-            >
-              {l}
-            </Link>
-          ))}
-        </div>
-        <div style={{ color: 'var(--text-muted)' }} className="text-xs text-right">
-          <div>076 906 8341</div>
-          <div className="mt-1">fhulufhelomarubini36@gmail.com</div>
-        </div>
-      </footer>
     </div>
   )
 }

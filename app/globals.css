@@ -1,4 +1,20 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* DEFAULT (matches blossom — applied before JS hydrates) */
+:root {
+  --bg: #fff8f8;
+  --bg-secondary: #fff0f2;
+  --surface: #ffffff;
+  --border: #fadadd;
+  --text: #2d1a1e;
+  --text-muted: #9e6b72;
+  --accent: #e8758a;
+  --accent-light: #fadadd;
+  --accent-fg: #ffffff;
+  --nav-bg: #fff8f8ee;
+}
 
 /* LUXE THEME - dark & gold */
 :root[data-theme='luxe'] {

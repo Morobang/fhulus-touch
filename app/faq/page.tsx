@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { MessageCircle } from 'lucide-react'
 
 const FAQS = [
   {
@@ -53,7 +54,7 @@ export default function FAQPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -63,7 +64,7 @@ export default function FAQPage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
         >
           Frequently Asked Questions
         </h1>
@@ -74,7 +75,7 @@ export default function FAQPage() {
       </section>
 
       {/* FAQS */}
-      <section className="px-12 py-16 max-w-3xl">
+      <section className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 max-w-3xl">
         {FAQS.map((faq, i) => (
           <div
             key={i}
@@ -92,9 +93,13 @@ export default function FAQPage() {
                 {faq.q}
               </span>
               <span
-                style={{ color: 'var(--accent)', flexShrink: 0 }}
-                className="text-lg transition-transform"
-                style2={{ transform: open === i ? 'rotate(45deg)' : 'rotate(0deg)' }}
+                style={{
+                  color: 'var(--accent)',
+                  flexShrink: 0,
+                  transform: open === i ? 'rotate(45deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s',
+                }}
+                className="text-lg"
               >
                 {open === i ? '−' : '+'}
               </span>
@@ -115,7 +120,7 @@ export default function FAQPage() {
       {/* STILL HAVE QUESTIONS */}
       <section
         style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}
-        className="px-12 py-16 flex items-center justify-between"
+        className="px-4 sm:px-8 lg:px-12 py-10 sm:py-16 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between"
       >
         <div>
           <div
@@ -135,7 +140,7 @@ export default function FAQPage() {
           style={{ background: '#25D366', color: '#fff' }}
           className="px-6 py-3 rounded-md text-sm font-medium flex items-center gap-2 hover:opacity-88 transition-opacity"
         >
-          💬 WhatsApp Fhulu
+          <MessageCircle size={16} /> WhatsApp Fhulu
         </a>
       </section>
     </div>

@@ -2,26 +2,57 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import {
+  LayoutDashboard,
+  Calendar,
+  Scissors,
+  Image,
+  Users,
+  Clock,
+  Star,
+  Gift,
+  Settings,
+  Globe,
+  LogOut,
+} from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) router.replace('/login')
+      else setChecking(false)
+    })
+  }, [router])
 
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: '📊' },
-    { href: '/admin/bookings', label: 'Bookings', icon: '📅' },
-    { href: '/admin/services', label: 'Services', icon: '✂️' },
-    { href: '/admin/gallery', label: 'Gallery', icon: '🖼️' },
-    { href: '/admin/clients', label: 'Clients', icon: '👥' },
-    { href: '/admin/availability', label: 'Availability', icon: '⏰' },
-    { href: '/admin/testimonials', label: 'Testimonials', icon: '⭐' },
-    { href: '/admin/promotions', label: 'Promotions', icon: '🎁' },
+    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
+    { href: '/admin/services', label: 'Services', icon: Scissors },
+    { href: '/admin/gallery', label: 'Gallery', icon: Image },
+    { href: '/admin/clients', label: 'Clients', icon: Users },
+    { href: '/admin/availability', label: 'Availability', icon: Clock },
+    { href: '/admin/testimonials', label: 'Testimonials', icon: Star },
+    { href: '/admin/promotions', label: 'Promotions', icon: Gift },
+    { href: '/admin/settings', label: 'Settings', icon: Settings },
   ]
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div style={{ color: 'var(--text-muted)' }} className="text-sm">Checking session…</div>
+      </div>
+    )
   }
 
   return (
@@ -50,21 +81,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <nav className="flex-1 py-4 px-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              style={{
-                background: pathname === item.href ? 'var(--bg)' : 'transparent',
-                color: pathname === item.href ? 'var(--text)' : 'var(--text-muted)',
-                border: pathname === item.href ? '1px solid var(--border)' : '1px solid transparent',
-              }}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-sm transition-all hover:text-[var(--text)]"
-            >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  background: pathname === item.href ? 'var(--bg)' : 'transparent',
+                  color: pathname === item.href ? 'var(--text)' : 'var(--text-muted)',
+                  border: pathname === item.href ? '1px solid var(--border)' : '1px solid transparent',
+                }}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg mb-1 text-sm transition-all hover:text-[var(--text)]"
+              >
+                <Icon size={16} />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
         </nav>
 
         <div
@@ -76,7 +110,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             style={{ color: 'var(--text-muted)' }}
             className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm hover:text-[var(--text)] transition-colors mb-1"
           >
-            <span>🌐</span>
+            <Globe size={16} />
             <span>View Site</span>
           </Link>
           <button
@@ -84,7 +118,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             style={{ color: 'var(--text-muted)' }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm hover:text-[var(--text)] transition-colors"
           >
-            <span>🚪</span>
+            <LogOut size={16} />
             <span>Log Out</span>
           </button>
         </div>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/context/ThemeContext'
-import Navbar from '@/components/Navbar'
+import SiteShell from '@/components/SiteShell'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -26,8 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={`${cormorant.variable} ${dmSans.variable}`}>
         <ThemeProvider>
-          <Navbar />
-          <main>{children}</main>
+          <SiteShell>{children}</SiteShell>
         </ThemeProvider>
       </body>
     </html>

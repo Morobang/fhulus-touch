@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { CheckCircle } from 'lucide-react'
 
 interface Service {
   id: string
@@ -199,7 +200,7 @@ export default function BookingPage() {
                 color: step === s.num ? 'var(--text)' : 'var(--text-muted)',
                 letterSpacing: '0.06em',
               }}
-              className="text-xs mt-2"
+              className="text-xs mt-2 hidden sm:block"
             >
               {s.label}
             </div>
@@ -226,7 +227,7 @@ export default function BookingPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -236,7 +237,7 @@ export default function BookingPage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
         >
           Book an Appointment
         </h1>
@@ -245,11 +246,11 @@ export default function BookingPage() {
         </p>
       </section>
 
-      <section className="px-12 py-12 max-w-2xl">
+      <section className="px-4 sm:px-8 lg:px-12 py-10 sm:py-12 w-full max-w-2xl">
         {/* SUCCESS */}
         {step === 5 ? (
           <div className="text-center py-16">
-            <div className="text-5xl mb-6">🎉</div>
+            <CheckCircle size={56} className="mx-auto mb-6" style={{ color: 'var(--accent)' }} />
             <h2
               style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
               className="text-4xl font-light mb-4"
@@ -303,7 +304,7 @@ export default function BookingPage() {
                 >
                   CHOOSE A SERVICE
                 </label>
-                <div className="grid grid-cols-2 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
                   {services.map((s) => (
                     <div
                       key={s.id}

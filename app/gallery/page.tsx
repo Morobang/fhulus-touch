@@ -49,7 +49,7 @@ export default function GalleryPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -59,7 +59,7 @@ export default function GalleryPage() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
         >
           Gallery
         </h1>
@@ -69,7 +69,7 @@ export default function GalleryPage() {
       </section>
 
       {/* FILTER TABS */}
-      <section className="px-12 pt-10 pb-4">
+      <section className="px-4 sm:px-8 lg:px-12 pt-8 sm:pt-10 pb-4">
         <div className="flex gap-2 flex-wrap">
           {CATEGORIES.map((cat) => (
             <button
@@ -89,7 +89,7 @@ export default function GalleryPage() {
       </section>
 
       {/* GRID */}
-      <section className="px-12 py-8">
+      <section className="px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
         {loading ? (
           <div
             style={{ color: 'var(--text-muted)' }}
@@ -168,7 +168,7 @@ export default function GalleryPage() {
       {/* CTA */}
       <section
         style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border)' }}
-        className="px-12 py-12 flex items-center justify-between"
+        className="px-4 sm:px-8 lg:px-12 py-10 sm:py-12 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:justify-between"
       >
         <div>
           <div
