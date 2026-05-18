@@ -59,8 +59,8 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="p-10">
-      <div className="mb-10">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="mb-8">
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
           className="text-4xl font-light mb-2"
@@ -73,7 +73,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {statCards.map((s) => {
           const Icon = s.icon
           return (
@@ -127,7 +127,8 @@ export default function AdminDashboard() {
             No bookings yet
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Client', 'Service', 'Location', 'Date', 'Time', 'Status'].map((h) => (
@@ -184,6 +185,7 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
