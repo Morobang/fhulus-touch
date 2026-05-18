@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
+import { Upload, Star, Trash2, AlertCircle, CheckCircle } from 'lucide-react'
 
 interface Photo {
   id: string
@@ -19,14 +21,21 @@ export default function AdminGallery() {
   const [category, setCategory] = useState('braids')
   const [caption, setCaption] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [uploadSuccess, setUploadSuccess] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const fetchPhotos = async () => {
-    const { data } = await supabase
+    const { data, error: fetchError } = await supabase
       .from('gallery_photos')
       .select('*')
       .order('created_at', { ascending: false })
-    if (data) setPhotos(data)
+
+    if (fetchError) {
+      setError('Could not load photos: ' + fetchError.message)
+    } else {
+      setPhotos(data ?? [])
+    }
     setLoading(false)
   }
 
@@ -42,42 +51,61 @@ export default function AdminGallery() {
     if (!file) return
 
     setUploading(true)
+    setError('')
+    setUploadSuccess(false)
 
     const ext = file.name.split('.').pop()
     const path = `${category}/${Date.now()}.${ext}`
 
-    const { error: uploadError } = await supabase.storage
+    const { error: storageError } = await supabase.storage
       .from('gallery')
       .upload(path, file)
 
-    if (uploadError) {
-      alert('Upload failed. Try again.')
+    if (storageError) {
+      setError('Upload failed: ' + storageError.message)
       setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
       return
     }
 
-    await supabase.from('gallery_photos').insert({
+    const { error: insertError } = await supabase.from('gallery_photos').insert({
       storage_path: path,
       category,
       caption,
     })
 
+    if (insertError) {
+      // Storage upload worked but DB insert failed — clean up the orphan file
+      await supabase.storage.from('gallery').remove([path])
+      setError('Photo saved to storage but database insert failed: ' + insertError.message)
+      setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
     setCaption('')
     if (fileRef.current) fileRef.current.value = ''
     setUploading(false)
+    setUploadSuccess(true)
+    setTimeout(() => setUploadSuccess(false), 3000)
     fetchPhotos()
   }
 
   const toggleFeatured = async (id: string, current: boolean) => {
-    await supabase.from('gallery_photos').update({ is_featured: !current }).eq('id', id)
-    fetchPhotos()
+    const { error: err } = await supabase
+      .from('gallery_photos')
+      .update({ is_featured: !current })
+      .eq('id', id)
+    if (err) setError('Could not update: ' + err.message)
+    else fetchPhotos()
   }
 
   const handleDelete = async (id: string, path: string) => {
     if (!confirm('Delete this photo?')) return
     await supabase.storage.from('gallery').remove([path])
-    await supabase.from('gallery_photos').delete().eq('id', id)
-    fetchPhotos()
+    const { error: err } = await supabase.from('gallery_photos').delete().eq('id', id)
+    if (err) setError('Delete failed: ' + err.message)
+    else fetchPhotos()
   }
 
   const inputStyle = {
@@ -87,7 +115,7 @@ export default function AdminGallery() {
   }
 
   return (
-    <div className="p-10">
+    <div className="p-6 lg:p-10">
       <div className="mb-8">
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
@@ -100,11 +128,31 @@ export default function AdminGallery() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
+      {/* Global error banner */}
+      {error && (
+        <div
+          style={{ color: '#e85a5a', background: 'rgba(232,90,90,0.08)', border: '1px solid rgba(232,90,90,0.2)' }}
+          className="flex items-start gap-3 px-4 py-3 rounded-lg text-sm mb-6"
+        >
+          <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+          <div>
+            <div className="font-medium mb-0.5">Something went wrong</div>
+            <div style={{ opacity: 0.85 }}>{error}</div>
+            {error.includes('row-level security') && (
+              <div className="mt-2 opacity-80">
+                Fix: run the RLS policy SQL in your Supabase dashboard → SQL Editor.
+              </div>
+            )}
+          </div>
+          <button onClick={() => setError('')} className="ml-auto flex-shrink-0 opacity-60 hover:opacity-100">✕</button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* UPLOAD FORM */}
         <div
           style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-          className="p-6 rounded-xl h-fit"
+          className="p-6 rounded-xl h-fit lg:sticky lg:top-6"
         >
           <div
             style={{ color: 'var(--text)', fontFamily: 'var(--font-serif)' }}
@@ -138,15 +186,12 @@ export default function AdminGallery() {
             onChange={(e) => setCaption(e.target.value)}
           />
 
-          <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
-            PHOTO
-          </label>
           <div
             style={{ border: '2px dashed var(--border)', background: 'var(--bg)' }}
             className="rounded-lg p-8 text-center mb-4 cursor-pointer hover:border-[var(--accent)] transition-colors"
-            onClick={() => fileRef.current?.click()}
+            onClick={() => !uploading && fileRef.current?.click()}
           >
-            <div className="text-2xl mb-2">📷</div>
+            <Upload size={24} className="mx-auto mb-2" style={{ color: 'var(--text-muted)' }} />
             <div style={{ color: 'var(--text-muted)' }} className="text-xs">
               {uploading ? 'Uploading...' : 'Click to select photo'}
             </div>
@@ -160,34 +205,47 @@ export default function AdminGallery() {
             />
           </div>
 
+          {uploadSuccess && (
+            <div className="flex items-center gap-2 text-sm mb-3" style={{ color: 'var(--accent)' }}>
+              <CheckCircle size={15} />
+              Photo uploaded successfully.
+            </div>
+          )}
+
           <p style={{ color: 'var(--text-muted)' }} className="text-xs">
-            JPG, PNG or WEBP. Max 10MB.
+            JPG, PNG or WEBP. Max 10 MB.
           </p>
         </div>
 
         {/* PHOTO GRID */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           {loading ? (
             <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-16">
               Loading photos...
             </div>
-          ) : photos.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-16">
+          ) : photos.length === 0 && !error ? (
+            <div
+              style={{ border: '1px dashed var(--border)', color: 'var(--text-muted)' }}
+              className="rounded-xl text-sm text-center py-16"
+            >
               No photos yet — upload your first one
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {photos.map((p) => (
                 <div
                   key={p.id}
-                  style={{ border: '1px solid var(--border)' }}
+                  style={{ border: p.is_featured ? '2px solid var(--accent)' : '1px solid var(--border)' }}
                   className="rounded-xl overflow-hidden"
                 >
-                  <img
-                    src={getPublicUrl(p.storage_path)}
-                    alt={p.caption || p.category}
-                    className="w-full aspect-square object-cover"
-                  />
+                  <div className="relative aspect-square">
+                    <Image
+                      src={getPublicUrl(p.storage_path)}
+                      alt={p.caption || p.category}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                   <div
                     style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}
                     className="p-3"
@@ -204,20 +262,21 @@ export default function AdminGallery() {
                       <button
                         onClick={() => toggleFeatured(p.id, p.is_featured)}
                         style={{
-                          background: p.is_featured ? '#f0a50022' : 'var(--bg)',
+                          background: p.is_featured ? 'rgba(240,165,0,0.12)' : 'var(--bg)',
                           color: p.is_featured ? '#f0a500' : 'var(--text-muted)',
-                          border: `1px solid ${p.is_featured ? '#f0a50044' : 'var(--border)'}`,
+                          border: `1px solid ${p.is_featured ? 'rgba(240,165,0,0.3)' : 'var(--border)'}`,
                         }}
-                        className="flex-1 text-xs py-1.5 rounded-md transition-all"
+                        className="flex-1 flex items-center justify-center gap-1 text-xs py-1.5 rounded-md transition-all"
                       >
-                        {p.is_featured ? '★ Featured' : '☆ Feature'}
+                        <Star size={12} />
+                        {p.is_featured ? 'Featured' : 'Feature'}
                       </button>
                       <button
                         onClick={() => handleDelete(p.id, p.storage_path)}
-                        style={{ background: '#e85a5a22', color: '#e85a5a', border: '1px solid #e85a5a44' }}
-                        className="px-3 py-1.5 rounded-md text-xs"
+                        style={{ background: 'rgba(232,90,90,0.1)', color: '#e85a5a', border: '1px solid rgba(232,90,90,0.2)' }}
+                        className="px-3 py-1.5 rounded-md"
                       >
-                        Delete
+                        <Trash2 size={12} />
                       </button>
                     </div>
                   </div>
