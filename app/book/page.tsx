@@ -68,7 +68,6 @@ function BookingContent() {
       const { data: lData } = await supabase
         .from('locations')
         .select('*')
-        .eq('is_active', true)
 
       if (sData) {
         setServices(sData)
@@ -312,11 +311,11 @@ function BookingContent() {
                 >
                   CHOOSE A SERVICE
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {services.map((s) => (
                     <div
                       key={s.id}
-                      onClick={() => setSelectedService(s)}
+                      onClick={() => { setSelectedService(s); setError(''); setStep(2) }}
                       style={{
                         background: 'var(--surface)',
                         border: selectedService?.id === s.id
@@ -340,17 +339,6 @@ function BookingContent() {
                     </div>
                   ))}
                 </div>
-                <button
-                  onClick={() => {
-                    if (!selectedService) { setError('Please select a service.'); return }
-                    setError('')
-                    setStep(2)
-                  }}
-                  style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-                  className="px-8 py-3 rounded-md text-sm font-medium"
-                >
-                  Continue →
-                </button>
               </div>
             )}
 
@@ -363,11 +351,11 @@ function BookingContent() {
                 >
                   CHOOSE A LOCATION
                 </label>
-                <div className="flex flex-col gap-3 mb-8">
+                <div className="flex flex-col gap-3 mb-6">
                   {locations.map((l) => (
                     <div
                       key={l.id}
-                      onClick={() => setSelectedLocation(l)}
+                      onClick={() => { setSelectedLocation(l); setError(''); setStep(3) }}
                       style={{
                         background: 'var(--surface)',
                         border: selectedLocation?.id === l.id
@@ -384,27 +372,19 @@ function BookingContent() {
                       </div>
                     </div>
                   ))}
+                  {locations.length === 0 && (
+                    <div style={{ color: 'var(--text-muted)' }} className="text-sm py-6 text-center">
+                      No locations available yet.
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setStep(1)}
-                    style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                    className="px-6 py-3 rounded-md text-sm"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!selectedLocation) { setError('Please select a location.'); return }
-                      setError('')
-                      setStep(3)
-                    }}
-                    style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-                    className="px-8 py-3 rounded-md text-sm font-medium"
-                  >
-                    Continue →
-                  </button>
-                </div>
+                <button
+                  onClick={() => setStep(1)}
+                  style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                  className="px-6 py-3 rounded-md text-sm"
+                >
+                  ← Back
+                </button>
               </div>
             )}
 
