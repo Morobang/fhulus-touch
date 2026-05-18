@@ -313,16 +313,18 @@ function BookingContent() {
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {services.map((s) => (
-                    <div
+                    <button
                       key={s.id}
+                      type="button"
                       onClick={() => { setSelectedService(s); setError(''); setStep(2) }}
                       style={{
                         background: 'var(--surface)',
                         border: selectedService?.id === s.id
                           ? '2px solid var(--accent)'
                           : '1px solid var(--border)',
+                        textAlign: 'left',
                       }}
-                      className="p-4 rounded-xl cursor-pointer transition-all hover:border-[var(--accent)]"
+                      className="p-4 rounded-xl transition-all hover:border-[var(--accent)] w-full"
                     >
                       <div
                         style={{ fontSize: '10px', color: 'var(--accent)', letterSpacing: '0.1em' }}
@@ -336,7 +338,7 @@ function BookingContent() {
                       <div style={{ color: 'var(--text-muted)' }} className="text-xs">
                         R{s.price} · {formatDuration(s.duration_min)}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -353,16 +355,18 @@ function BookingContent() {
                 </label>
                 <div className="flex flex-col gap-3 mb-6">
                   {locations.map((l) => (
-                    <div
+                    <button
                       key={l.id}
+                      type="button"
                       onClick={() => { setSelectedLocation(l); setError(''); setStep(3) }}
                       style={{
                         background: 'var(--surface)',
                         border: selectedLocation?.id === l.id
                           ? '2px solid var(--accent)'
                           : '1px solid var(--border)',
+                        textAlign: 'left',
                       }}
-                      className="p-5 rounded-xl cursor-pointer transition-all hover:border-[var(--accent)]"
+                      className="p-5 rounded-xl transition-all hover:border-[var(--accent)] w-full"
                     >
                       <div style={{ color: 'var(--text)' }} className="font-medium mb-1">
                         {l.area}
@@ -370,7 +374,7 @@ function BookingContent() {
                       <div style={{ color: 'var(--text-muted)' }} className="text-sm">
                         {l.address || 'Address to be confirmed'}
                       </div>
-                    </div>
+                    </button>
                   ))}
                   {locations.length === 0 && (
                     <div style={{ color: 'var(--text-muted)' }} className="text-sm py-6 text-center">
