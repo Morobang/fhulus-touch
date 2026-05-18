@@ -20,7 +20,7 @@ export default function ContactPage() {
       `Message: ${form.message}`
     )
 
-    window.open(`https://wa.me/27769068341?text=${msg}`, '_blank')
+    window.open(`whatsapp://send?phone=27769068341&text=${msg}`, '_blank')
     setSent(true)
     setSending(false)
   }

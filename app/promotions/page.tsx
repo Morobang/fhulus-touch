@@ -75,7 +75,7 @@ export default function PromotionsPage() {
               Follow Fhulu on WhatsApp or Instagram to be the first to know about new deals.
             </p>
             <a
-              href="https://wa.me/27769068341"
+              href="whatsapp://send?phone=27769068341"
               style={{ background: '#25D366', color: '#fff' }}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md text-sm font-medium"
             >

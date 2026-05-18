@@ -134,7 +134,7 @@ export default function FAQPage() {
           </div>
         </div>
         <a
-          href="https://wa.me/27769068341"
+          href="whatsapp://send?phone=27769068341"
           target="_blank"
           rel="noopener noreferrer"
           style={{ background: '#25D366', color: '#fff' }}

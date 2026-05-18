@@ -168,7 +168,7 @@ function BookingContent() {
       `${notes ? `📝 Notes: ${notes}` : ''}`
     )
 
-    window.open(`https://wa.me/27769068341?text=${message}`, '_blank')
+    window.open(`whatsapp://send?phone=27769068341&text=${message}`, '_blank')
 
     setStep(5)
     setSubmitting(false)
