@@ -49,6 +49,7 @@ function BookingContent() {
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [whatsappUrl, setWhatsappUrl] = useState('')
 
   const TIME_SLOTS = [
     '08:00', '09:00', '10:00', '11:00',
@@ -150,7 +151,7 @@ function BookingContent() {
     })
 
     if (insertError) {
-      setError('Something went wrong. Please try again.')
+      setError('Booking failed: ' + insertError.message)
       setSubmitting(false)
       return
     }
@@ -166,8 +167,7 @@ function BookingContent() {
       `${notes ? `📝 Notes: ${notes}` : ''}`
     )
 
-    window.open(`whatsapp://send?phone=27769068341&text=${message}`, '_blank')
-
+    setWhatsappUrl(`whatsapp://send?phone=27769068341&text=${message}`)
     setStep(5)
     setSubmitting(false)
   }
@@ -222,26 +222,35 @@ function BookingContent() {
               You're all booked!
             </h2>
             <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed mb-2">
-              A WhatsApp message has been sent to Fhulu with your booking details.
+              Your booking has been saved.
             </p>
             <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed mb-8">
-              She will confirm your appointment shortly.
+              Tap the button below to notify Fhulu on WhatsApp — she'll confirm shortly.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col gap-3 items-center">
               <a
-                href="/"
-                style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-                className="px-8 py-3 rounded-lg text-sm font-medium text-center"
+                href={whatsappUrl}
+                style={{ background: '#25D366', color: '#fff' }}
+                className="w-full sm:w-auto px-8 py-3 rounded-lg text-sm font-medium text-center"
               >
-                Back to Home
+                Send booking to Fhulu on WhatsApp
               </a>
-              <a
-                href="/book"
-                style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                className="px-8 py-3 rounded-lg text-sm text-center"
-              >
-                Book Another
-              </a>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <a
+                  href="/"
+                  style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                  className="flex-1 sm:flex-none px-8 py-3 rounded-lg text-sm text-center"
+                >
+                  Back to Home
+                </a>
+                <a
+                  href="/book"
+                  style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                  className="flex-1 sm:flex-none px-8 py-3 rounded-lg text-sm text-center"
+                >
+                  Book Another
+                </a>
+              </div>
             </div>
           </div>
         ) : (
