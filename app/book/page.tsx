@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { CheckCircle } from 'lucide-react'
@@ -23,6 +23,14 @@ interface Location {
 type Step = 1 | 2 | 3 | 4 | 5
 
 export default function BookingPage() {
+  return (
+    <Suspense fallback={<div style={{ color: 'var(--text-muted)' }} className="p-12 text-sm">Loading…</div>}>
+      <BookingContent />
+    </Suspense>
+  )
+}
+
+function BookingContent() {
   const searchParams = useSearchParams()
   const preselectedService = searchParams.get('service')
 
