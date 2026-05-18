@@ -25,11 +25,12 @@ export default function AdminServices() {
   const [saved, setSaved] = useState(false)
 
   const fetchServices = async () => {
-    const { data } = await supabase
+    const { data, error: fetchError } = await supabase
       .from('services')
       .select('*')
       .order('category')
       .order('name')
+    if (fetchError) setError('Could not load services: ' + fetchError.message)
     if (data) setServices(data)
     setLoading(false)
   }
@@ -48,7 +49,7 @@ export default function AdminServices() {
       name: form.name.trim(),
       category: form.category.trim() || 'Hair',
       price: Number(form.price),
-      duration_min: form.duration_min ? Number(form.duration_min) : null,
+      duration_min: form.duration_min ? Number(form.duration_min) : 0,
     }
 
     const { error: dbError } = editing
