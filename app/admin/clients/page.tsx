@@ -59,27 +59,24 @@ export default function AdminClients() {
   )
 
   return (
-    <div className="p-10">
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1
-            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-            className="text-4xl font-light mb-2"
-          >
-            Clients
-          </h1>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Everyone who has completed an appointment
-          </p>
-        </div>
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="mb-6">
+        <h1
+          style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
+          className="text-3xl sm:text-4xl font-light mb-2"
+        >
+          Clients
+        </h1>
+        <p style={{ color: 'var(--text-muted)' }} className="text-sm mb-4">
+          Everyone who has completed an appointment
+        </p>
         <input
           style={{
             background: 'var(--surface)',
             border: '1px solid var(--border)',
             color: 'var(--text)',
-            width: '240px',
           }}
-          className="px-4 py-2 rounded-lg text-sm outline-none"
+          className="w-full sm:w-64 px-4 py-2 rounded-lg text-sm outline-none"
           placeholder="Search by name or phone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -99,7 +96,8 @@ export default function AdminClients() {
             {search ? 'No clients match your search' : 'No completed appointments yet'}
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Client', 'Phone', 'Email', 'Visits', 'Last Visit', 'Last Service', 'Actions'].map((h) => (
@@ -164,6 +162,7 @@ export default function AdminClients() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

@@ -135,7 +135,7 @@ export default function AdminGallery() {
   }
 
   return (
-    <div className="p-6 lg:p-10">
+    <div className="p-4 sm:p-6 lg:p-10">
       <div className="mb-8">
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}

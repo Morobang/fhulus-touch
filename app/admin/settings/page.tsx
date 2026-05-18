@@ -57,7 +57,7 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="p-10 max-w-xl">
+    <div className="p-4 sm:p-6 lg:p-10 max-w-xl">
       <h1
         style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
         className="text-4xl font-light mb-2"

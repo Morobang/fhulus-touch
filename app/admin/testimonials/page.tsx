@@ -73,11 +73,11 @@ export default function AdminTestimonials() {
   }
 
   return (
-    <div className="p-10">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="mb-6">
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-4xl font-light mb-2"
+          className="text-3xl sm:text-4xl font-light mb-2"
         >
           Testimonials
         </h1>
@@ -86,9 +86,9 @@ export default function AdminTestimonials() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* LEFT — reviews list */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <div className="flex gap-2 mb-6">
             {(['all', 'pending', 'approved'] as const).map((f) => (
               <button

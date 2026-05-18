@@ -36,23 +36,21 @@ export default function AdminBookings() {
   }
 
   return (
-    <div className="p-10">
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1
-            style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-            className="text-4xl font-light mb-2"
-          >
-            Bookings
-          </h1>
-          <p style={{ color: 'var(--text-muted)' }} className="text-sm">
-            Manage all appointments across locations
-          </p>
-        </div>
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="mb-6">
+        <h1
+          style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
+          className="text-3xl sm:text-4xl font-light mb-2"
+        >
+          Bookings
+        </h1>
+        <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+          Manage all appointments across locations
+        </p>
       </div>
 
       {/* FILTER TABS */}
-      <div className="flex gap-2 mb-8">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
         {(['all', 'pending', 'confirmed', 'done', 'cancelled'] as const).map((f) => (
           <button
             key={f}
@@ -83,7 +81,8 @@ export default function AdminBookings() {
             No bookings found
           </div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 {['Client', 'Service', 'Location', 'Date', 'Time', 'Notes', 'Status', 'Actions'].map((h) => (
@@ -193,6 +192,7 @@ export default function AdminBookings() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

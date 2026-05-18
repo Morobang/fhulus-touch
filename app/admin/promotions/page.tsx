@@ -84,11 +84,11 @@ export default function AdminPromotions() {
   }
 
   return (
-    <div className="p-10">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="mb-6">
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-4xl font-light mb-2"
+          className="text-3xl sm:text-4xl font-light mb-2"
         >
           Promotions
         </h1>
@@ -97,9 +97,9 @@ export default function AdminPromotions() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* LEFT — promotions list */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           {loading ? (
             <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-12">
               Loading...

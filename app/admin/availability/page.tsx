@@ -135,11 +135,11 @@ export default function AdminAvailability() {
   }
 
   return (
-    <div className="p-10">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="mb-6">
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-4xl font-light mb-2"
+          className="text-3xl sm:text-4xl font-light mb-2"
         >
           Availability
         </h1>
@@ -166,9 +166,9 @@ export default function AdminAvailability() {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* WORKING HOURS */}
-        <div className="col-span-2">
+        <div className="lg:col-span-2">
           <div
             style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
             className="rounded-xl overflow-hidden mb-6"
@@ -198,7 +198,7 @@ export default function AdminAvailability() {
                     borderBottom: '1px solid var(--border)',
                     opacity: row.is_closed ? 0.5 : 1,
                   }}
-                  className="flex items-center gap-6 py-4 last:border-b-0"
+                  className="flex flex-wrap items-center gap-3 py-4 last:border-b-0"
                 >
                   <div
                     style={{ color: 'var(--text)', minWidth: '100px' }}
