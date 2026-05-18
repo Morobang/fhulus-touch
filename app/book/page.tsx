@@ -39,7 +39,6 @@ function BookingContent() {
   const [locations, setLocations] = useState<Location[]>([])
   const [bookedSlots, setBookedSlots] = useState<string[]>([])
 
-  // form state
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
   const [selectedDate, setSelectedDate] = useState<string>('')
@@ -54,7 +53,7 @@ function BookingContent() {
   const TIME_SLOTS = [
     '08:00', '09:00', '10:00', '11:00',
     '12:00', '13:00', '14:00', '15:00',
-    '16:00', '17:00'
+    '16:00', '17:00',
   ]
 
   useEffect(() => {
@@ -122,6 +121,7 @@ function BookingContent() {
   }
 
   const formatDuration = (mins: number) => {
+    if (!mins) return null
     if (mins < 60) return `${mins} min`
     const h = Math.floor(mins / 60)
     const m = mins % 60
@@ -155,7 +155,6 @@ function BookingContent() {
       return
     }
 
-    // send whatsapp notification to fhulu
     const message = encodeURIComponent(
       `🌟 NEW BOOKING — Fhulu's Touch\n\n` +
       `👤 Client: ${name}\n` +
@@ -173,55 +172,12 @@ function BookingContent() {
     setSubmitting(false)
   }
 
-  const StepIndicator = () => (
-    <div className="flex items-center gap-0 mb-10">
-      {[
-        { num: 1, label: 'SERVICE' },
-        { num: 2, label: 'LOCATION' },
-        { num: 3, label: 'DATE & TIME' },
-        { num: 4, label: 'YOUR DETAILS' },
-      ].map((s, i) => (
-        <div key={s.num} className="flex items-center">
-          <div className="flex flex-col items-center">
-            <div
-              style={{
-                background:
-                  step > s.num
-                    ? 'var(--text)'
-                    : step === s.num
-                    ? 'var(--accent)'
-                    : 'var(--border)',
-                color:
-                  step > s.num
-                    ? 'var(--bg)'
-                    : step === s.num
-                    ? 'var(--accent-fg)'
-                    : 'var(--text-muted)',
-              }}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all"
-            >
-              {step > s.num ? '✓' : s.num}
-            </div>
-            <div
-              style={{
-                color: step === s.num ? 'var(--text)' : 'var(--text-muted)',
-                letterSpacing: '0.06em',
-              }}
-              className="text-xs mt-2 hidden sm:block"
-            >
-              {s.label}
-            </div>
-          </div>
-          {i < 3 && (
-            <div
-              style={{ background: 'var(--border)' }}
-              className="h-px w-16 mb-5 mx-2"
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  )
+  const STEPS = [
+    { num: 1, label: 'Service' },
+    { num: 2, label: 'Location' },
+    { num: 3, label: 'Date & Time' },
+    { num: 4, label: 'Details' },
+  ]
 
   const inputStyle = {
     background: 'var(--surface)',
@@ -234,7 +190,7 @@ function BookingContent() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
+        className="px-4 sm:px-8 lg:px-16 py-10 sm:py-14"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -244,7 +200,7 @@ function BookingContent() {
         </p>
         <h1
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-4"
+          className="text-3xl sm:text-4xl lg:text-5xl font-light mb-3"
         >
           Book an Appointment
         </h1>
@@ -253,14 +209,15 @@ function BookingContent() {
         </p>
       </section>
 
-      <section className="px-4 sm:px-8 lg:px-12 py-10 sm:py-12 w-full max-w-2xl">
+      <section className="px-4 sm:px-8 lg:px-16 py-8 sm:py-12 w-full max-w-2xl">
+
         {/* SUCCESS */}
         {step === 5 ? (
-          <div className="text-center py-16">
-            <CheckCircle size={56} className="mx-auto mb-6" style={{ color: 'var(--accent)' }} />
+          <div className="text-center py-12">
+            <CheckCircle size={52} className="mx-auto mb-6" style={{ color: 'var(--accent)' }} />
             <h2
               style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-              className="text-4xl font-light mb-4"
+              className="text-3xl sm:text-4xl font-light mb-4"
             >
               You're all booked!
             </h2>
@@ -270,29 +227,18 @@ function BookingContent() {
             <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed mb-8">
               She will confirm your appointment shortly.
             </p>
-            <div className="flex gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
                 href="/"
                 style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-                className="px-8 py-3 rounded-md text-sm font-medium"
+                className="px-8 py-3 rounded-lg text-sm font-medium text-center"
               >
                 Back to Home
               </a>
               <a
                 href="/book"
                 style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                className="px-8 py-3 rounded-md text-sm"
-                onClick={() => {
-                  setStep(1)
-                  setSelectedService(null)
-                  setSelectedLocation(null)
-                  setSelectedDate('')
-                  setSelectedTime('')
-                  setName('')
-                  setPhone('')
-                  setEmail('')
-                  setNotes('')
-                }}
+                className="px-8 py-3 rounded-lg text-sm text-center"
               >
                 Book Another
               </a>
@@ -300,17 +246,57 @@ function BookingContent() {
           </div>
         ) : (
           <>
-            <StepIndicator />
+            {/* STEP INDICATOR */}
+            <div className="flex items-start mb-10">
+              {STEPS.map((s, i) => (
+                <div key={s.num} className="flex items-center flex-1 last:flex-none">
+                  <div className="flex flex-col items-center">
+                    <div
+                      style={{
+                        background:
+                          step > s.num
+                            ? 'var(--text)'
+                            : step === s.num
+                            ? 'var(--accent)'
+                            : 'var(--border)',
+                        color:
+                          step > s.num
+                            ? 'var(--bg)'
+                            : step === s.num
+                            ? 'var(--accent-fg)'
+                            : 'var(--text-muted)',
+                        flexShrink: 0,
+                      }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium"
+                    >
+                      {step > s.num ? '✓' : s.num}
+                    </div>
+                    <div
+                      style={{
+                        color: step === s.num ? 'var(--text)' : 'var(--text-muted)',
+                        letterSpacing: '0.04em',
+                      }}
+                      className="text-xs mt-1.5 hidden sm:block whitespace-nowrap"
+                    >
+                      {s.label}
+                    </div>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div
+                      style={{ background: 'var(--border)' }}
+                      className="h-px flex-1 mx-2 mb-4 sm:mb-5"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
 
             {/* STEP 1 — SERVICE */}
             {step === 1 && (
               <div>
-                <label
-                  style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                  className="text-xs font-medium block mb-4"
-                >
+                <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-4">
                   CHOOSE A SERVICE
-                </label>
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {services.map((s) => (
                     <button
@@ -336,7 +322,7 @@ function BookingContent() {
                         {s.name}
                       </div>
                       <div style={{ color: 'var(--text-muted)' }} className="text-xs">
-                        R{s.price} · {formatDuration(s.duration_min)}
+                        R{s.price}{formatDuration(s.duration_min) ? ` · ${formatDuration(s.duration_min)}` : ''}
                       </div>
                     </button>
                   ))}
@@ -347,12 +333,9 @@ function BookingContent() {
             {/* STEP 2 — LOCATION */}
             {step === 2 && (
               <div>
-                <label
-                  style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                  className="text-xs font-medium block mb-4"
-                >
+                <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-4">
                   CHOOSE A LOCATION
-                </label>
+                </p>
                 <div className="flex flex-col gap-3 mb-6">
                   {locations.map((l) => (
                     <button
@@ -377,7 +360,7 @@ function BookingContent() {
                     </button>
                   ))}
                   {locations.length === 0 && (
-                    <div style={{ color: 'var(--text-muted)' }} className="text-sm py-6 text-center">
+                    <div style={{ color: 'var(--text-muted)' }} className="text-sm py-8 text-center">
                       No locations available yet.
                     </div>
                   )}
@@ -385,7 +368,7 @@ function BookingContent() {
                 <button
                   onClick={() => setStep(1)}
                   style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                  className="px-6 py-3 rounded-md text-sm"
+                  className="px-6 py-3 rounded-lg text-sm"
                 >
                   ← Back
                 </button>
@@ -401,16 +384,22 @@ function BookingContent() {
                 >
                   {monthName}
                 </div>
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((d) => (
+
+                {/* Calendar day headers */}
+                <div className="grid grid-cols-7 gap-1 mb-1">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
                     <div
-                      key={d}
-                      style={{ color: 'var(--text-muted)', letterSpacing: '0.06em' }}
-                      className="text-center text-xs py-2"
+                      key={i}
+                      style={{ color: 'var(--text-muted)' }}
+                      className="text-center text-xs py-2 font-medium"
                     >
                       {d}
                     </div>
                   ))}
+                </div>
+
+                {/* Calendar grid */}
+                <div className="grid grid-cols-7 gap-1 mb-6">
                   {Array.from({ length: firstDay }).map((_, i) => (
                     <div key={`empty-${i}`} />
                   ))}
@@ -424,10 +413,7 @@ function BookingContent() {
                       <button
                         key={day}
                         disabled={isPast}
-                        onClick={() => {
-                          setSelectedDate(dateStr)
-                          setSelectedTime('')
-                        }}
+                        onClick={() => { setSelectedDate(dateStr); setSelectedTime('') }}
                         style={{
                           background: isSelected ? 'var(--accent)' : 'transparent',
                           color: isPast
@@ -445,14 +431,11 @@ function BookingContent() {
                 </div>
 
                 {selectedDate && (
-                  <div className="mt-6">
-                    <label
-                      style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                      className="text-xs font-medium block mb-3"
-                    >
+                  <div className="mb-8">
+                    <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-3">
                       AVAILABLE TIMES
-                    </label>
-                    <div className="grid grid-cols-5 gap-2 mb-8">
+                    </p>
+                    <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                       {TIME_SLOTS.map((slot) => {
                         const isTaken = bookedSlots.includes(slot)
                         const isSelected = selectedTime === slot
@@ -476,7 +459,7 @@ function BookingContent() {
                               border: '1px solid var(--border)',
                               textDecoration: isTaken ? 'line-through' : 'none',
                             }}
-                            className="py-2 rounded-lg text-sm transition-all disabled:cursor-not-allowed"
+                            className="py-2.5 rounded-lg text-sm transition-all disabled:cursor-not-allowed"
                           >
                             {slot}
                           </button>
@@ -486,11 +469,17 @@ function BookingContent() {
                   </div>
                 )}
 
+                {error && (
+                  <div style={{ color: '#e85a5a' }} className="text-sm mb-4">
+                    {error}
+                  </div>
+                )}
+
                 <div className="flex gap-3">
                   <button
                     onClick={() => setStep(2)}
                     style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                    className="px-6 py-3 rounded-md text-sm"
+                    className="px-6 py-3 rounded-lg text-sm"
                   >
                     ← Back
                   </button>
@@ -504,7 +493,7 @@ function BookingContent() {
                       setStep(4)
                     }}
                     style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
-                    className="px-8 py-3 rounded-md text-sm font-medium"
+                    className="px-8 py-3 rounded-lg text-sm font-medium"
                   >
                     Continue →
                   </button>
@@ -518,12 +507,9 @@ function BookingContent() {
                 {/* SUMMARY */}
                 <div
                   style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                  className="p-5 rounded-xl mb-8"
+                  className="p-4 sm:p-5 rounded-xl mb-8"
                 >
-                  <div
-                    style={{ color: 'var(--accent)', letterSpacing: '0.1em' }}
-                    className="text-xs mb-3"
-                  >
+                  <div style={{ color: 'var(--accent)', letterSpacing: '0.1em' }} className="text-xs mb-3">
                     BOOKING SUMMARY
                   </div>
                   {[
@@ -535,41 +521,35 @@ function BookingContent() {
                     <div
                       key={row.label}
                       style={{ borderBottom: '1px solid var(--border)' }}
-                      className="flex justify-between py-2 text-sm last:border-b-0"
+                      className="flex justify-between items-start gap-4 py-2.5 text-sm last:border-b-0"
                     >
-                      <span style={{ color: 'var(--text-muted)' }}>{row.label}</span>
-                      <span style={{ color: 'var(--text)' }}>{row.value}</span>
+                      <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>{row.label}</span>
+                      <span style={{ color: 'var(--text)', textAlign: 'right' }}>{row.value}</span>
                     </div>
                   ))}
                 </div>
 
-                <label
-                  style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                  className="text-xs font-medium block mb-2"
-                >
-                  FULL NAME *
-                </label>
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-2">
+                  YOUR NAME *
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                   <input
                     style={inputStyle}
-                    className="px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)]"
+                    className="w-full px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)]"
                     placeholder="First name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
                   <input
                     style={inputStyle}
-                    className="px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)]"
+                    className="w-full px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)]"
                     placeholder="Last name"
                   />
                 </div>
 
-                <label
-                  style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                  className="text-xs font-medium block mb-2"
-                >
+                <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-2">
                   PHONE NUMBER *
-                </label>
+                </p>
                 <input
                   style={inputStyle}
                   className="w-full px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)] mb-4"
@@ -579,12 +559,9 @@ function BookingContent() {
                   type="tel"
                 />
 
-                <label
-                  style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                  className="text-xs font-medium block mb-2"
-                >
-                  EMAIL ADDRESS
-                </label>
+                <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-2">
+                  EMAIL ADDRESS <span style={{ fontWeight: 300 }}>— optional</span>
+                </p>
                 <input
                   style={inputStyle}
                   className="w-full px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)] mb-4"
@@ -594,13 +571,9 @@ function BookingContent() {
                   type="email"
                 />
 
-                <label
-                  style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }}
-                  className="text-xs font-medium block mb-2"
-                >
-                  NOTES FOR FHULU
-                  <span style={{ color: 'var(--text-muted)', fontWeight: 300 }}> (optional)</span>
-                </label>
+                <p style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs font-medium mb-2">
+                  NOTES FOR FHULU <span style={{ fontWeight: 300 }}>— optional</span>
+                </p>
                 <textarea
                   style={{ ...inputStyle, resize: 'none' }}
                   className="w-full px-4 py-3 rounded-lg text-sm outline-none focus:border-[var(--accent)] mb-6 h-24"
@@ -618,11 +591,11 @@ function BookingContent() {
                   </div>
                 )}
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setStep(3)}
                     style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                    className="px-6 py-3 rounded-md text-sm"
+                    className="px-6 py-3 rounded-lg text-sm order-2 sm:order-1"
                   >
                     ← Back
                   </button>
@@ -630,20 +603,11 @@ function BookingContent() {
                     onClick={handleSubmit}
                     disabled={submitting}
                     style={{ background: 'var(--text)', color: 'var(--bg)' }}
-                    className="px-8 py-3 rounded-md text-sm font-medium disabled:opacity-50"
+                    className="flex-1 sm:flex-none px-8 py-3 rounded-lg text-sm font-medium disabled:opacity-50 order-1 sm:order-2"
                   >
                     {submitting ? 'Confirming...' : '✓ Confirm Booking'}
                   </button>
                 </div>
-              </div>
-            )}
-
-            {error && step !== 4 && (
-              <div
-                style={{ color: '#e85a5a' }}
-                className="text-sm mt-3"
-              >
-                {error}
               </div>
             )}
           </>
