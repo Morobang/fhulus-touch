@@ -13,7 +13,7 @@ interface Service {
   is_visible: boolean
 }
 
-const EMPTY = { name: '', category: 'Braids', price: '', duration_min: '' }
+const EMPTY = { name: '', category: 'Braids', price: '', duration_min: '', description: '' }
 
 export default function AdminServices() {
   const [services, setServices] = useState<Service[]>([])
@@ -50,6 +50,7 @@ export default function AdminServices() {
       category: form.category.trim() || 'Hair',
       price: Number(form.price),
       duration_min: form.duration_min ? Number(form.duration_min) : 0,
+      description: form.description.trim() || null,
     }
 
     const { error: dbError } = editing
@@ -90,6 +91,7 @@ export default function AdminServices() {
       category: s.category,
       price: String(s.price),
       duration_min: s.duration_min ? String(s.duration_min) : '',
+      description: (s as any).description ?? '',
     })
   }
 
@@ -253,6 +255,17 @@ export default function AdminServices() {
             min="0"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
+          />
+
+          <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
+            DESCRIPTION <span style={{ fontWeight: 300 }}>— optional</span>
+          </label>
+          <input
+            style={inputStyle}
+            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4 focus:border-[var(--accent)]"
+            placeholder='e.g. "Price varies with hair length"'
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
 
           <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">

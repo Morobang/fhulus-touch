@@ -35,9 +35,13 @@ interface GalleryPhoto {
   caption: string
 }
 
-function ServiceIcon({ category }: { category: string }) {
-  if (category === 'nails') return <Paintbrush size={22} />
-  return <Scissors size={22} />
+function categoryMeta(cat: string) {
+  switch (cat.toLowerCase()) {
+    case 'braids': return { gradient: 'linear-gradient(135deg, #7B4F2E 0%, #C4902C 100%)', Icon: Scissors }
+    case 'nails':  return { gradient: 'linear-gradient(135deg, #9B3D6B 0%, #D4728A 100%)', Icon: Paintbrush }
+    case 'hair':   return { gradient: 'linear-gradient(135deg, #5B3D8B 0%, #9272C4 100%)', Icon: Sparkles }
+    default:       return { gradient: 'linear-gradient(135deg, #4A5568 0%, #718096 100%)', Icon: Scissors }
+  }
 }
 
 export default function HomePage() {
@@ -182,32 +186,34 @@ export default function HomePage() {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.map((s) => (
-            <div
-              key={s.id}
-              style={{
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-              }}
-              className="p-5 sm:p-6 rounded-xl hover:border-[var(--accent)] transition-colors cursor-pointer"
-            >
-              <div className="mb-3" style={{ color: 'var(--accent)' }}>
-                <ServiceIcon category={s.category} />
-              </div>
-              <div
-                style={{ fontSize: '10px', color: 'var(--accent)', letterSpacing: '0.12em' }}
-                className="font-medium mb-1"
+          {services.map((s) => {
+            const { gradient, Icon } = categoryMeta(s.category)
+            return (
+              <Link
+                key={s.id}
+                href={`/book?service=${s.id}`}
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                className="rounded-2xl overflow-hidden hover:border-[var(--accent)] hover:-translate-y-1 transition-all duration-200 flex flex-col"
               >
-                {s.category.toUpperCase()}
-              </div>
-              <div style={{ color: 'var(--text)' }} className="font-medium mb-1">
-                {s.name}
-              </div>
-              <div style={{ color: 'var(--text-muted)' }} className="text-sm">
-                From R{s.price}
-              </div>
-            </div>
-          ))}
+                <div style={{ background: gradient }} className="h-24 flex items-center justify-center relative">
+                  <Icon size={36} color="rgba(255,255,255,0.25)" />
+                  <span
+                    style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', backdropFilter: 'blur(4px)' }}
+                    className="absolute bottom-2 left-3 text-xs px-2 py-0.5 rounded-full"
+                  >
+                    {s.category}
+                  </span>
+                </div>
+                <div className="p-4 sm:p-5 flex items-end justify-between">
+                  <div>
+                    <div style={{ color: 'var(--text)' }} className="font-medium text-sm mb-0.5">{s.name}</div>
+                    <div style={{ color: 'var(--text-muted)' }} className="text-xs">From R{s.price}</div>
+                  </div>
+                  <span style={{ color: 'var(--accent)' }} className="text-sm">Book →</span>
+                </div>
+              </Link>
+            )
+          })}
         </div>
         <div className="mt-6 sm:mt-8">
           <Link
