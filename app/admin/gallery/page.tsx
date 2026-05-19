@@ -12,18 +12,24 @@ interface Photo {
   caption: string
   description: string | null
   is_featured: boolean
+  service_id: string | null
+  services?: { name: string; category: string } | null
 }
 
-const CATEGORIES = ['braids', 'nails', 'locs', 'colour', 'natural']
+interface Service {
+  id: string
+  name: string
+  category: string
+}
 
 export default function AdminGallery() {
   const [photos, setPhotos] = useState<Photo[]>([])
+  const [services, setServices] = useState<Service[]>([])
   const [uploading, setUploading] = useState(false)
-  const [category, setCategory] = useState('braids')
-  const [caption, setCaption] = useState('')
+  const [serviceId, setServiceId] = useState('')
   const [description, setDescription] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState({ caption: '', description: '' })
+  const [editForm, setEditForm] = useState({ service_id: '', description: '' })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [uploadSuccess, setUploadSuccess] = useState(false)
@@ -32,7 +38,7 @@ export default function AdminGallery() {
   const fetchPhotos = async () => {
     const { data, error: fetchError } = await supabase
       .from('gallery_photos')
-      .select('*')
+      .select('*, services(name, category)')
       .order('created_at', { ascending: false })
 
     if (fetchError) {
@@ -43,12 +49,34 @@ export default function AdminGallery() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchPhotos() }, [])
+  const fetchServices = async () => {
+    const { data } = await supabase
+      .from('services')
+      .select('id, name, category')
+      .eq('is_visible', true)
+      .order('category')
+      .order('name')
+    if (data) setServices(data)
+  }
+
+  useEffect(() => {
+    fetchPhotos()
+    fetchServices()
+  }, [])
 
   const getPublicUrl = (path: string) => {
     const { data } = supabase.storage.from('gallery').getPublicUrl(path)
     return data.publicUrl
   }
+
+  const groupedServices = services.reduce<Record<string, Service[]>>((acc, s) => {
+    if (!acc[s.category]) acc[s.category] = []
+    acc[s.category].push(s)
+    return acc
+  }, {})
+
+  const displayName = (p: Photo) => p.services?.name ?? p.caption
+  const displayCategory = (p: Photo) => p.services?.category ?? p.category
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -58,12 +86,12 @@ export default function AdminGallery() {
     setError('')
     setUploadSuccess(false)
 
+    const svc = services.find((s) => s.id === serviceId)
+    const cat = svc?.category?.toLowerCase() ?? 'general'
     const ext = file.name.split('.').pop()
-    const path = `${category}/${Date.now()}.${ext}`
+    const path = `${cat}/${Date.now()}.${ext}`
 
-    const { error: storageError } = await supabase.storage
-      .from('gallery')
-      .upload(path, file)
+    const { error: storageError } = await supabase.storage.from('gallery').upload(path, file)
 
     if (storageError) {
       setError('Upload failed: ' + storageError.message)
@@ -74,21 +102,21 @@ export default function AdminGallery() {
 
     const { error: insertError } = await supabase.from('gallery_photos').insert({
       storage_path: path,
-      category,
-      caption,
+      category: svc?.category ?? 'General',
+      caption: svc?.name ?? '',
+      service_id: serviceId || null,
       description: description.trim() || null,
     })
 
     if (insertError) {
-      // Storage upload worked but DB insert failed — clean up the orphan file
       await supabase.storage.from('gallery').remove([path])
-      setError('Photo saved to storage but database insert failed: ' + insertError.message)
+      setError('Database insert failed: ' + insertError.message)
       setUploading(false)
       if (fileRef.current) fileRef.current.value = ''
       return
     }
 
-    setCaption('')
+    setServiceId('')
     setDescription('')
     if (fileRef.current) fileRef.current.value = ''
     setUploading(false)
@@ -108,13 +136,19 @@ export default function AdminGallery() {
 
   const startEdit = (p: Photo) => {
     setEditingId(p.id)
-    setEditForm({ caption: p.caption ?? '', description: p.description ?? '' })
+    setEditForm({ service_id: p.service_id ?? '', description: p.description ?? '' })
   }
 
   const handleUpdate = async (id: string) => {
+    const svc = services.find((s) => s.id === editForm.service_id)
     const { error: err } = await supabase
       .from('gallery_photos')
-      .update({ caption: editForm.caption.trim() || null, description: editForm.description.trim() || null })
+      .update({
+        service_id: editForm.service_id || null,
+        caption: svc?.name ?? null,
+        category: svc?.category ?? null,
+        description: editForm.description.trim() || null,
+      })
       .eq('id', id)
     if (err) setError('Update failed: ' + err.message)
     else { setEditingId(null); fetchPhotos() }
@@ -148,7 +182,6 @@ export default function AdminGallery() {
         </p>
       </div>
 
-      {/* Global error banner */}
       {error && (
         <div
           style={{ color: '#e85a5a', background: 'rgba(232,90,90,0.08)', border: '1px solid rgba(232,90,90,0.2)' }}
@@ -158,11 +191,6 @@ export default function AdminGallery() {
           <div>
             <div className="font-medium mb-0.5">Something went wrong</div>
             <div style={{ opacity: 0.85 }}>{error}</div>
-            {error.includes('row-level security') && (
-              <div className="mt-2 opacity-80">
-                Fix: run the RLS policy SQL in your Supabase dashboard → SQL Editor.
-              </div>
-            )}
           </div>
           <button onClick={() => setError('')} className="ml-auto flex-shrink-0 opacity-60 hover:opacity-100">✕</button>
         </div>
@@ -182,29 +210,23 @@ export default function AdminGallery() {
           </div>
 
           <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
-            CATEGORY
+            SERVICE
           </label>
           <select
             style={inputStyle}
-            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4 capitalize"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4"
+            value={serviceId}
+            onChange={(e) => setServiceId(e.target.value)}
           >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c} className="capitalize">{c}</option>
+            <option value="">— No specific service —</option>
+            {Object.entries(groupedServices).map(([cat, svcs]) => (
+              <optgroup key={cat} label={cat}>
+                {svcs.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
-
-          <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
-            NAME <span style={{ fontWeight: 300 }}>(optional)</span>
-          </label>
-          <input
-            style={inputStyle}
-            className="w-full px-4 py-3 rounded-lg text-sm outline-none mb-4"
-            placeholder="e.g. Knotless braids with curls"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-          />
 
           <label style={{ color: 'var(--text-muted)', letterSpacing: '0.1em' }} className="text-xs block mb-2">
             DESCRIPTION <span style={{ fontWeight: 300 }}>(optional)</span>
@@ -272,7 +294,7 @@ export default function AdminGallery() {
                   <div className="relative aspect-square">
                     <Image
                       src={getPublicUrl(p.storage_path)}
-                      alt={p.caption || p.category}
+                      alt={displayName(p) || p.category}
                       fill
                       className="object-cover"
                     />
@@ -283,17 +305,25 @@ export default function AdminGallery() {
                   >
                     {editingId === p.id ? (
                       <div className="flex flex-col gap-2">
+                        <select
+                          style={inputStyle}
+                          className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                          value={editForm.service_id}
+                          onChange={(e) => setEditForm({ ...editForm, service_id: e.target.value })}
+                        >
+                          <option value="">— No service —</option>
+                          {Object.entries(groupedServices).map(([cat, svcs]) => (
+                            <optgroup key={cat} label={cat}>
+                              {svcs.map((s) => (
+                                <option key={s.id} value={s.id}>{s.name}</option>
+                              ))}
+                            </optgroup>
+                          ))}
+                        </select>
                         <input
                           style={inputStyle}
-                          className="w-full px-2 py-1.5 rounded text-xs outline-none focus:border-[var(--accent)]"
-                          placeholder="Name"
-                          value={editForm.caption}
-                          onChange={(e) => setEditForm({ ...editForm, caption: e.target.value })}
-                        />
-                        <input
-                          style={inputStyle}
-                          className="w-full px-2 py-1.5 rounded text-xs outline-none focus:border-[var(--accent)]"
-                          placeholder="Description"
+                          className="w-full px-2 py-1.5 rounded text-xs outline-none"
+                          placeholder="Description (optional)"
                           value={editForm.description}
                           onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                         />
@@ -317,10 +347,22 @@ export default function AdminGallery() {
                     ) : (
                       <>
                         <div className="flex items-start justify-between gap-1 mb-1">
-                          <div style={{ color: 'var(--text)' }} className="text-xs font-medium capitalize">
-                            {p.caption || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>no name</span>}
+                          <div className="min-w-0">
+                            <div
+                              style={{ color: 'var(--accent)', fontSize: '10px', letterSpacing: '0.1em' }}
+                              className="mb-0.5 truncate"
+                            >
+                              {displayCategory(p)?.toUpperCase() || 'UNLINKED'}
+                            </div>
+                            <div style={{ color: 'var(--text)' }} className="text-xs font-medium truncate">
+                              {displayName(p) || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>no service</span>}
+                            </div>
                           </div>
-                          <button onClick={() => startEdit(p)} style={{ color: 'var(--text-muted)' }} className="flex-shrink-0 hover:text-[var(--text)]">
+                          <button
+                            onClick={() => startEdit(p)}
+                            style={{ color: 'var(--text-muted)' }}
+                            className="flex-shrink-0 hover:text-[var(--text)]"
+                          >
                             <Pencil size={11} />
                           </button>
                         </div>

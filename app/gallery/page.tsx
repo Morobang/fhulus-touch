@@ -10,9 +10,9 @@ interface Photo {
   caption: string
   description: string | null
   is_featured: boolean
+  service_id: string | null
+  services?: { name: string; category: string } | null
 }
-
-const CATEGORIES = ['All', 'Braids', 'Nails', 'Locs', 'Colour', 'Natural']
 
 export default function GalleryPage() {
   const [photos, setPhotos] = useState<Photo[]>([])
@@ -24,7 +24,7 @@ export default function GalleryPage() {
     const fetchPhotos = async () => {
       const { data } = await supabase
         .from('gallery_photos')
-        .select('*')
+        .select('*, services(name, category)')
         .order('created_at', { ascending: false })
 
       if (data) setPhotos(data)
@@ -39,10 +39,21 @@ export default function GalleryPage() {
     return data.publicUrl
   }
 
+  const effectiveCategory = (p: Photo) => p.services?.category ?? p.category
+  const effectiveName = (p: Photo) => p.services?.name ?? p.caption
+
+  // Derive unique categories from actual photos
+  const categories = [
+    'All',
+    ...Array.from(new Set(photos.map(effectiveCategory)))
+      .filter(Boolean)
+      .sort(),
+  ]
+
   const filtered = photos.filter((p) =>
     activeCategory === 'All'
       ? true
-      : p.category.toLowerCase() === activeCategory.toLowerCase()
+      : effectiveCategory(p).toLowerCase() === activeCategory.toLowerCase()
   )
 
   return (
@@ -72,7 +83,7 @@ export default function GalleryPage() {
       {/* FILTER TABS */}
       <section className="px-4 sm:px-8 lg:px-12 pt-8 sm:pt-10 pb-4">
         <div className="flex gap-2 flex-wrap">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -92,17 +103,11 @@ export default function GalleryPage() {
       {/* GRID */}
       <section className="px-4 sm:px-8 lg:px-12 py-6 sm:py-8">
         {loading ? (
-          <div
-            style={{ color: 'var(--text-muted)' }}
-            className="text-sm text-center py-20"
-          >
+          <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-20">
             Loading gallery...
           </div>
         ) : filtered.length === 0 ? (
-          <div
-            style={{ color: 'var(--text-muted)' }}
-            className="text-sm text-center py-20"
-          >
+          <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-20">
             No photos in this category yet — check back soon.
           </div>
         ) : (
@@ -116,7 +121,7 @@ export default function GalleryPage() {
               >
                 <img
                   src={getPublicUrl(photo.storage_path)}
-                  alt={photo.caption || photo.category}
+                  alt={effectiveName(photo) || effectiveCategory(photo)}
                   className="w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div
@@ -128,15 +133,15 @@ export default function GalleryPage() {
                       style={{ color: '#C2185B', letterSpacing: '0.16em' }}
                       className="text-lg font-bold uppercase text-center"
                     >
-                      {photo.category}
+                      {effectiveCategory(photo)}
                     </span>
                   )}
-                  {photo.caption && (
+                  {effectiveName(photo) && (
                     <span
                       style={{ color: '#F48FB1' }}
                       className="text-sm font-semibold text-center leading-snug"
                     >
-                      {photo.caption}
+                      {effectiveName(photo)}
                     </span>
                   )}
                   {photo.description && (
@@ -157,7 +162,7 @@ export default function GalleryPage() {
       {/* LIGHTBOX */}
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-8"
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-8"
           style={{ background: 'rgba(0,0,0,0.9)' }}
           onClick={() => setSelected(null)}
         >
@@ -167,12 +172,26 @@ export default function GalleryPage() {
           >
             <img
               src={getPublicUrl(selected.storage_path)}
-              alt={selected.caption || selected.category}
+              alt={effectiveName(selected) || effectiveCategory(selected)}
               className="w-full rounded-xl object-cover"
             />
-            {selected.caption && (
-              <div className="text-center mt-4 text-white text-sm opacity-70">
-                {selected.caption}
+            {(effectiveName(selected) || effectiveCategory(selected)) && (
+              <div className="text-center mt-4">
+                {effectiveCategory(selected) && (
+                  <div style={{ color: '#C2185B', letterSpacing: '0.12em' }} className="text-xs font-bold uppercase mb-1">
+                    {effectiveCategory(selected)}
+                  </div>
+                )}
+                {effectiveName(selected) && (
+                  <div style={{ color: '#F48FB1' }} className="text-sm font-medium">
+                    {effectiveName(selected)}
+                  </div>
+                )}
+                {selected.description && (
+                  <div style={{ color: 'rgba(255,255,255,0.6)' }} className="text-xs mt-1">
+                    {selected.description}
+                  </div>
+                )}
               </div>
             )}
             <button
