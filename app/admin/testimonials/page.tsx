@@ -81,9 +81,30 @@ export default function AdminTestimonials() {
         >
           Testimonials
         </h1>
-        <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+        <p style={{ color: 'var(--text-muted)' }} className="text-sm mb-4">
           Approve reviews and pin the best ones to the homepage
         </p>
+        {/* Review link to share with clients */}
+        <div
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+          className="flex flex-col sm:flex-row items-start sm:items-center gap-3 px-4 py-3 rounded-xl"
+        >
+          <div className="flex-1 min-w-0">
+            <div style={{ color: 'var(--text-muted)', letterSpacing: '0.08em' }} className="text-xs mb-1">
+              SHARE THIS LINK WITH CLIENTS
+            </div>
+            <div style={{ color: 'var(--text)', fontFamily: 'monospace' }} className="text-sm truncate">
+              {typeof window !== 'undefined' ? window.location.origin : ''}/review
+            </div>
+          </div>
+          <button
+            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/review`)}
+            style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
+            className="px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0"
+          >
+            Copy Link
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">

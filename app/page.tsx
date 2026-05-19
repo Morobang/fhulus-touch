@@ -57,9 +57,10 @@ export default function HomePage() {
         supabase
           .from('testimonials')
           .select('*')
-          .eq('is_featured', true)
           .eq('is_approved', true)
-          .limit(4),
+          .order('is_featured', { ascending: false })
+          .order('created_at', { ascending: false })
+          .limit(6),
         supabase
           .from('promotions')
           .select('*')
