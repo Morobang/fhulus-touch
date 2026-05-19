@@ -19,7 +19,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
 
       {/* Floating WhatsApp button */}
       <a
-        href="whatsapp://send?phone=27769068341"
+        href={`whatsapp://send?phone=27769068341&text=${encodeURIComponent("Hi Fhulu! 👋 I'd like to enquire about booking an appointment at Fhulu's Touch.")}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="WhatsApp Fhulu"
