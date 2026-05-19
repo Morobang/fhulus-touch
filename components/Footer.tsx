@@ -23,7 +23,7 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-wrap gap-4">
-          {['Services', 'Gallery', 'About', 'Contact', 'Book'].map((l) => (
+          {['Services', 'Gallery', 'FAQ', 'About', 'Contact', 'Book'].map((l) => (
             <Link
               key={l}
               href={`/${l.toLowerCase()}`}

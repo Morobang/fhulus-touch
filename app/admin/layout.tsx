@@ -18,6 +18,7 @@ import {
   LogOut,
   Menu,
   X,
+  HelpCircle,
 } from 'lucide-react'
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/admin/availability', label: 'Availability', icon: Clock },
   { href: '/admin/testimonials', label: 'Testimonials', icon: Star },
   { href: '/admin/promotions', label: 'Promotions', icon: Gift },
+  { href: '/admin/faq', label: 'FAQ', icon: HelpCircle },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 
