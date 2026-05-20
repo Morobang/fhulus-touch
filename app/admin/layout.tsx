@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   HelpCircle,
+  SplitSquareHorizontal,
 } from 'lucide-react'
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
   { href: '/admin/services', label: 'Services', icon: Scissors },
   { href: '/admin/gallery', label: 'Gallery', icon: Image },
+  { href: '/admin/before-after', label: 'Before & After', icon: SplitSquareHorizontal },
   { href: '/admin/clients', label: 'Clients', icon: Users },
   { href: '/admin/availability', label: 'Availability', icon: Clock },
   { href: '/admin/testimonials', label: 'Testimonials', icon: Star },

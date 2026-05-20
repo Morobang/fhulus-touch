@@ -67,6 +67,11 @@ export default function AdminPromotions() {
     fetchPromotions()
   }
 
+  const isExpired = (valid_until: string) => {
+    if (!valid_until) return false
+    return new Date(valid_until) < new Date(new Date().toDateString())
+  }
+
   const startEdit = (p: Promotion) => {
     setEditing(p.id)
     setForm({
@@ -110,16 +115,27 @@ export default function AdminPromotions() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {promotions.map((p) => (
+              {promotions.map((p) => {
+                const expired = isExpired(p.valid_until)
+                return (
                 <div
                   key={p.id}
                   style={{
                     background: 'var(--surface)',
-                    border: `1px solid ${p.is_active ? 'var(--accent)' : 'var(--border)'}`,
+                    border: `1px solid ${expired ? '#e85a5a66' : p.is_active ? 'var(--accent)' : 'var(--border)'}`,
                     opacity: p.is_active ? 1 : 0.6,
                   }}
                   className="p-6 rounded-xl"
                 >
+                  {expired && (
+                    <div
+                      style={{ background: '#e85a5a18', border: '1px solid #e85a5a44', color: '#e85a5a' }}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs mb-4"
+                    >
+                      <span className="font-semibold">Expired</span>
+                      <span style={{ opacity: 0.75 }}>— this promotion's end date has passed. Update the date or deactivate it.</span>
+                    </div>
+                  )}
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <div
@@ -157,7 +173,10 @@ export default function AdminPromotions() {
                   )}
 
                   {p.valid_until && (
-                    <div style={{ color: 'var(--text-muted)' }} className="text-xs mb-4">
+                    <div
+                      style={{ color: expired ? '#e85a5a' : 'var(--text-muted)' }}
+                      className="text-xs mb-4"
+                    >
                       Valid until {new Date(p.valid_until).toLocaleDateString('en-ZA')}
                     </div>
                   )}
@@ -186,7 +205,8 @@ export default function AdminPromotions() {
                     </button>
                   </div>
                 </div>
-              ))}
+              )
+              })}
             </div>
           )}
         </div>

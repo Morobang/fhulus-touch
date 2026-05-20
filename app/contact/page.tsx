@@ -1,13 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { MapPin, Clock, Phone, Mail, MessageCircle, CheckCircle } from 'lucide-react'
+
+interface Location {
+  id: string
+  area: string
+  address: string
+}
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', contact: '', message: '' })
   const [sent, setSent] = useState(false)
   const [sending, setSending] = useState(false)
+  const [locations, setLocations] = useState<Location[]>([])
+
+  useEffect(() => {
+    supabase.from('locations').select('id, area, address').then(({ data }) => {
+      if (data) setLocations(data)
+    })
+  }, [])
 
   const handleSend = async () => {
     if (!form.name || !form.contact || !form.message) return
@@ -31,18 +44,6 @@ export default function ContactPage() {
     color: 'var(--text)',
   }
 
-  const locations = [
-    {
-      area: 'Polokwane',
-      address: 'Address to be updated',
-      hours: 'Mon–Sat: 08:00 – 18:00',
-    },
-    {
-      area: 'Mokopane',
-      address: 'Address to be updated',
-      hours: 'Mon–Sat: 08:00 – 18:00',
-    },
-  ]
 
   return (
     <div>
@@ -81,7 +82,7 @@ export default function ContactPage() {
 
           {locations.map((l) => (
             <div
-              key={l.area}
+              key={l.id}
               style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
               className="p-6 rounded-xl mb-4"
             >
@@ -95,13 +96,7 @@ export default function ContactPage() {
                 <div className="flex gap-3 items-start">
                   <MapPin size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
                   <span style={{ color: 'var(--text-muted)' }} className="text-sm">
-                    {l.address}
-                  </span>
-                </div>
-                <div className="flex gap-3 items-start">
-                  <Clock size={16} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 2 }} />
-                  <span style={{ color: 'var(--text-muted)' }} className="text-sm">
-                    {l.hours}
+                    {l.address || 'Address to be confirmed'}
                   </span>
                 </div>
               </div>

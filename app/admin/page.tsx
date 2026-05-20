@@ -3,39 +3,73 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Calendar, Clock, Users, Image } from 'lucide-react'
+import { Calendar, Clock, Users, Image, TrendingUp, Star } from 'lucide-react'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalBookings: 0,
     pendingBookings: 0,
+    bookingsThisWeek: 0,
+    revenueThisMonth: 0,
     totalClients: 0,
     totalPhotos: 0,
+    pendingReviews: 0,
   })
   const [recentBookings, setRecentBookings] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [bookings, pending, clients, photos, recent] = await Promise.all([
-        supabase.from('bookings').select('id', { count: 'exact' }),
-        supabase.from('bookings').select('id', { count: 'exact' }).eq('status', 'pending'),
-        supabase.from('bookings').select('client_phone').then(({ data }) => {
-          const unique = new Set(data?.map((b) => b.client_phone))
-          return unique.size
-        }),
-        supabase.from('gallery_photos').select('id', { count: 'exact' }),
-        supabase
-          .from('bookings')
-          .select('*, services(name), locations(area)')
-          .order('created_at', { ascending: false })
-          .limit(5),
-      ])
+      const now = new Date()
+
+      // Week: Monday → today
+      const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1
+      const weekStart = new Date(now)
+      weekStart.setDate(now.getDate() - dayOfWeek)
+      const weekStartStr = weekStart.toISOString().slice(0, 10)
+
+      // Month: 1st of current month → today
+      const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+      const [bookings, pending, weekBookings, clients, photos, pendingReviews, monthBookings, recent] =
+        await Promise.all([
+          supabase.from('bookings').select('id', { count: 'exact' }),
+          supabase.from('bookings').select('id', { count: 'exact' }).eq('status', 'pending'),
+          supabase
+            .from('bookings')
+            .select('id', { count: 'exact' })
+            .gte('booking_date', weekStartStr)
+            .not('status', 'eq', 'cancelled'),
+          supabase.from('bookings').select('client_phone').then(({ data }) => {
+            const unique = new Set(data?.map((b) => b.client_phone))
+            return unique.size
+          }),
+          supabase.from('gallery_photos').select('id', { count: 'exact' }),
+          supabase.from('testimonials').select('id', { count: 'exact' }).eq('is_approved', false),
+          supabase
+            .from('bookings')
+            .select('services(price)')
+            .gte('booking_date', monthStartStr)
+            .not('status', 'eq', 'cancelled'),
+          supabase
+            .from('bookings')
+            .select('*, services(name, price), locations(area)')
+            .order('created_at', { ascending: false })
+            .limit(5),
+        ])
+
+      const revenue = (monthBookings.data ?? []).reduce(
+        (sum: number, b: any) => sum + (b.services?.price ?? 0),
+        0,
+      )
 
       setStats({
         totalBookings: bookings.count || 0,
         pendingBookings: pending.count || 0,
+        bookingsThisWeek: weekBookings.count || 0,
+        revenueThisMonth: revenue,
         totalClients: clients,
         totalPhotos: photos.count || 0,
+        pendingReviews: pendingReviews.count || 0,
       })
 
       if (recent.data) setRecentBookings(recent.data)
@@ -45,10 +79,13 @@ export default function AdminDashboard() {
   }, [])
 
   const statCards = [
-    { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, href: '/admin/bookings' },
-    { label: 'Pending Confirm', value: stats.pendingBookings, icon: Clock, href: '/admin/bookings' },
-    { label: 'Unique Clients', value: stats.totalClients, icon: Users, href: '/admin/clients' },
-    { label: 'Gallery Photos', value: stats.totalPhotos, icon: Image, href: '/admin/gallery' },
+    { label: 'Pending Confirm', value: stats.pendingBookings, icon: Clock, href: '/admin/bookings', highlight: stats.pendingBookings > 0 },
+    { label: 'This Week', value: stats.bookingsThisWeek, icon: Calendar, href: '/admin/bookings', highlight: false },
+    { label: 'Revenue This Month', value: `R${stats.revenueThisMonth.toLocaleString()}`, icon: TrendingUp, href: '/admin/bookings', highlight: false },
+    { label: 'Pending Reviews', value: stats.pendingReviews, icon: Star, href: '/admin/testimonials', highlight: stats.pendingReviews > 0 },
+    { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, href: '/admin/bookings', highlight: false },
+    { label: 'Unique Clients', value: stats.totalClients, icon: Users, href: '/admin/clients', highlight: false },
+    { label: 'Gallery Photos', value: stats.totalPhotos, icon: Image, href: '/admin/gallery', highlight: false },
   ]
 
   const statusColor: Record<string, string> = {
@@ -73,27 +110,30 @@ export default function AdminDashboard() {
       </div>
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
         {statCards.map((s) => {
           const Icon = s.icon
           return (
-          <Link
-            key={s.label}
-            href={s.href}
-            style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-            className="p-6 rounded-xl hover:border-[var(--accent)] transition-colors"
-          >
-            <div className="mb-3" style={{ color: 'var(--accent)' }}><Icon size={20} /></div>
-            <div
-              style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
-              className="text-3xl font-semibold mb-1"
+            <Link
+              key={s.label}
+              href={s.href}
+              style={{
+                background: s.highlight ? 'rgba(var(--accent-rgb, 194,24,91), 0.06)' : 'var(--surface)',
+                border: s.highlight ? '1px solid var(--accent)' : '1px solid var(--border)',
+              }}
+              className="p-5 rounded-xl hover:border-[var(--accent)] transition-colors"
             >
-              {s.value}
-            </div>
-            <div style={{ color: 'var(--text-muted)' }} className="text-xs">
-              {s.label}
-            </div>
-          </Link>
+              <div className="mb-3" style={{ color: 'var(--accent)' }}><Icon size={18} /></div>
+              <div
+                style={{ fontFamily: 'var(--font-serif)', color: 'var(--text)' }}
+                className="text-2xl font-semibold mb-1"
+              >
+                {s.value}
+              </div>
+              <div style={{ color: 'var(--text-muted)' }} className="text-xs">
+                {s.label}
+              </div>
+            </Link>
           )
         })}
       </div>

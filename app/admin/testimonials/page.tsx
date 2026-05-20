@@ -94,11 +94,11 @@ export default function AdminTestimonials() {
               SHARE THIS LINK WITH CLIENTS
             </div>
             <div style={{ color: 'var(--text)', fontFamily: 'monospace' }} className="text-sm truncate">
-              {typeof window !== 'undefined' ? window.location.origin : ''}/review
+              https://fhulus-touch.vercel.app/review
             </div>
           </div>
           <button
-            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/review`)}
+            onClick={() => navigator.clipboard.writeText('https://fhulus-touch.vercel.app/review')}
             style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
             className="px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap flex-shrink-0"
           >

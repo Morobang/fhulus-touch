@@ -37,7 +37,7 @@ export default function BeforeAfterPage() {
       {/* HEADER */}
       <section
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
-        className="px-12 py-16"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16"
       >
         <p
           style={{ color: 'var(--accent)', letterSpacing: '0.2em' }}
@@ -57,7 +57,7 @@ export default function BeforeAfterPage() {
       </section>
 
       {/* GRID */}
-      <section className="px-12 py-16">
+      <section className="px-4 sm:px-8 lg:px-12 py-8 sm:py-12 lg:py-16">
         {loading ? (
           <div style={{ color: 'var(--text-muted)' }} className="text-sm text-center py-20">
             Loading transformations...
@@ -67,7 +67,7 @@ export default function BeforeAfterPage() {
             Before & after photos coming soon — check back after our next appointments.
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {items.map((item) => (
               <div
                 key={item.id}
@@ -126,11 +126,11 @@ export default function BeforeAfterPage() {
       {/* CTA */}
       <section
         style={{ background: 'var(--accent)' }}
-        className="px-12 py-16 text-center"
+        className="px-4 sm:px-8 lg:px-12 py-12 sm:py-16 text-center"
       >
         <h2
           style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent-fg)' }}
-          className="text-4xl font-light mb-4"
+          className="text-2xl sm:text-3xl lg:text-4xl font-light mb-4"
         >
           Want your own transformation?
         </h2>

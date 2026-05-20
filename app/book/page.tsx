@@ -227,26 +227,33 @@ function BookingContent() {
             <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed mb-8">
               Tap the button below to notify Fhulu on WhatsApp — she'll confirm shortly.
             </p>
-            <div className="flex flex-col gap-3 items-center">
+            <div className="flex flex-col gap-3 items-center w-full sm:max-w-xs mx-auto">
               <a
                 href={whatsappUrl}
                 style={{ background: '#25D366', color: '#fff' }}
-                className="w-full sm:w-auto px-8 py-3 rounded-lg text-sm font-medium text-center"
+                className="w-full px-8 py-3 rounded-lg text-sm font-medium text-center"
               >
                 Send booking to Fhulu on WhatsApp
               </a>
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <a
+                href="/review"
+                style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                className="w-full px-8 py-3 rounded-lg text-sm text-center"
+              >
+                ★ Leave a review after your appointment
+              </a>
+              <div className="flex gap-3 w-full">
                 <a
                   href="/"
                   style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                  className="flex-1 sm:flex-none px-8 py-3 rounded-lg text-sm text-center"
+                  className="flex-1 px-4 py-2.5 rounded-lg text-sm text-center"
                 >
-                  Back to Home
+                  Home
                 </a>
                 <a
                   href="/book"
                   style={{ border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-                  className="flex-1 sm:flex-none px-8 py-3 rounded-lg text-sm text-center"
+                  className="flex-1 px-4 py-2.5 rounded-lg text-sm text-center"
                 >
                   Book Another
                 </a>

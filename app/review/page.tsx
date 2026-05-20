@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Copy, Check } from 'lucide-react'
 
 export default function ReviewPage() {
   const [name, setName] = useState('')
@@ -12,6 +12,13 @@ export default function ReviewPage() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText('https://fhulus-touch.vercel.app/review')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const handleSubmit = async () => {
     if (!name.trim()) { setError('Please enter your name.'); return }
@@ -80,6 +87,40 @@ export default function ReviewPage() {
             <p style={{ color: 'var(--text-muted)' }} className="text-sm leading-relaxed mb-8">
               Your review has been submitted and will appear on the site once approved. Fhulu really appreciates it!
             </p>
+
+            {/* REFERRAL */}
+            <div
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+              className="rounded-xl px-5 py-5 mb-8 text-left"
+            >
+              <div style={{ color: 'var(--text)' }} className="text-sm font-medium mb-1">
+                Know someone who&rsquo;d love Fhulu&rsquo;s Touch?
+              </div>
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs mb-4 leading-relaxed">
+                Share the review link — help a friend find a great stylist.
+              </p>
+              <div className="flex gap-2">
+                <div
+                  style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                  className="flex-1 px-3 py-2 rounded-lg text-xs truncate"
+                >
+                  https://fhulus-touch.vercel.app/review
+                </div>
+                <button
+                  onClick={handleCopy}
+                  style={{
+                    background: copied ? '#25D36622' : 'var(--accent)',
+                    color: copied ? '#25D366' : 'var(--accent-fg)',
+                    border: copied ? '1px solid #25D36644' : 'none',
+                  }}
+                  className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+                >
+                  {copied ? <Check size={13} /> : <Copy size={13} />}
+                  {copied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            </div>
+
             <a
               href="/"
               style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}

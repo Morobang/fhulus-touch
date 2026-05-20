@@ -162,12 +162,12 @@ export default function GalleryPage() {
       {/* LIGHTBOX */}
       {selected && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-8"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
           style={{ background: 'rgba(0,0,0,0.9)' }}
           onClick={() => setSelected(null)}
         >
           <div
-            className="relative max-w-2xl w-full"
+            className="relative w-full max-w-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <img
@@ -175,25 +175,33 @@ export default function GalleryPage() {
               alt={effectiveName(selected) || effectiveCategory(selected)}
               className="w-full rounded-xl object-cover"
             />
-            {(effectiveName(selected) || effectiveCategory(selected)) && (
-              <div className="text-center mt-4">
-                {effectiveCategory(selected) && (
-                  <div style={{ color: '#C2185B', letterSpacing: '0.12em' }} className="text-xs font-bold uppercase mb-1">
-                    {effectiveCategory(selected)}
-                  </div>
-                )}
-                {effectiveName(selected) && (
-                  <div style={{ color: '#F48FB1' }} className="text-sm font-medium">
-                    {effectiveName(selected)}
-                  </div>
-                )}
-                {selected.description && (
-                  <div style={{ color: 'rgba(255,255,255,0.6)' }} className="text-xs mt-1">
-                    {selected.description}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="mt-4 text-center">
+              {effectiveCategory(selected) && (
+                <div style={{ color: '#C2185B', letterSpacing: '0.12em' }} className="text-xs font-bold uppercase mb-1">
+                  {effectiveCategory(selected)}
+                </div>
+              )}
+              {effectiveName(selected) && (
+                <div style={{ color: '#F48FB1' }} className="text-sm font-medium mb-1">
+                  {effectiveName(selected)}
+                </div>
+              )}
+              {selected.description && (
+                <div style={{ color: 'rgba(255,255,255,0.6)' }} className="text-xs mb-3">
+                  {selected.description}
+                </div>
+              )}
+              {selected.service_id && (
+                <a
+                  href={`/book?service=${selected.service_id}`}
+                  style={{ background: 'var(--accent)', color: 'var(--accent-fg)' }}
+                  className="inline-block px-6 py-2.5 rounded-lg text-sm font-medium mt-1"
+                  onClick={() => setSelected(null)}
+                >
+                  Book this style →
+                </a>
+              )}
+            </div>
             <button
               onClick={() => setSelected(null)}
               className="absolute -top-4 -right-4 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
