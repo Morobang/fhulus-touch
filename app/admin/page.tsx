@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Calendar, Clock, Users, Image, TrendingUp, Star } from 'lucide-react'
+import { Calendar, Clock, Users, Image, TrendingUp, Star, Eye } from 'lucide-react'
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -14,6 +14,8 @@ export default function AdminDashboard() {
     totalClients: 0,
     totalPhotos: 0,
     pendingReviews: 0,
+    visitsToday: 0,
+    visitsThisMonth: 0,
   })
   const [recentBookings, setRecentBookings] = useState<any[]>([])
 
@@ -30,7 +32,9 @@ export default function AdminDashboard() {
       // Month: 1st of current month → today
       const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
-      const [bookings, pending, weekBookings, clients, photos, pendingReviews, monthBookings, recent] =
+      const todayStr = now.toISOString().slice(0, 10)
+
+      const [bookings, pending, weekBookings, clients, photos, pendingReviews, monthBookings, recent, visitsToday, visitsMonth] =
         await Promise.all([
           supabase.from('bookings').select('id', { count: 'exact' }),
           supabase.from('bookings').select('id', { count: 'exact' }).eq('status', 'pending'),
@@ -55,6 +59,8 @@ export default function AdminDashboard() {
             .select('*, services(name, price), locations(area)')
             .order('created_at', { ascending: false })
             .limit(5),
+          supabase.from('page_views').select('id', { count: 'exact' }).gte('created_at', `${todayStr}T00:00:00`),
+          supabase.from('page_views').select('id', { count: 'exact' }).gte('created_at', `${monthStartStr}T00:00:00`),
         ])
 
       const revenue = (monthBookings.data ?? []).reduce(
@@ -70,6 +76,8 @@ export default function AdminDashboard() {
         totalClients: clients,
         totalPhotos: photos.count || 0,
         pendingReviews: pendingReviews.count || 0,
+        visitsToday: visitsToday.count || 0,
+        visitsThisMonth: visitsMonth.count || 0,
       })
 
       if (recent.data) setRecentBookings(recent.data)
@@ -86,6 +94,8 @@ export default function AdminDashboard() {
     { label: 'Total Bookings', value: stats.totalBookings, icon: Calendar, href: '/admin/bookings', highlight: false },
     { label: 'Unique Clients', value: stats.totalClients, icon: Users, href: '/admin/clients', highlight: false },
     { label: 'Gallery Photos', value: stats.totalPhotos, icon: Image, href: '/admin/gallery', highlight: false },
+    { label: 'Visits Today', value: stats.visitsToday, icon: Eye, href: '#', highlight: false },
+    { label: 'Visits This Month', value: stats.visitsThisMonth, icon: Eye, href: '#', highlight: false },
   ]
 
   const statusColor: Record<string, string> = {

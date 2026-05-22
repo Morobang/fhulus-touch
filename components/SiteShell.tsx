@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { MessageCircle } from 'lucide-react'
 import Navbar from './Navbar'
 import Footer from './Footer'
+import PageTracker from './PageTracker'
 
 export default function SiteShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -13,6 +14,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <PageTracker />
       <Navbar />
       <main>{children}</main>
       <Footer />
