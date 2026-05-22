@@ -22,12 +22,40 @@ export default function GalleryPage() {
 
   useEffect(() => {
     const fetchPhotos = async () => {
-      const { data } = await supabase
-        .from('gallery_photos')
-        .select('*, services(name, category)')
-        .order('created_at', { ascending: false })
+      const [galleryRes, servicesRes] = await Promise.all([
+        supabase
+          .from('gallery_photos')
+          .select('*, services(name, category)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('services')
+          .select('id, name, category, photo_path, description')
+          .eq('is_visible', true)
+          .not('photo_path', 'is', null),
+      ])
 
-      if (data) setPhotos(data)
+      const galleryPhotos: Photo[] = galleryRes.data ?? []
+
+      // Service IDs already represented in gallery_photos — don't show twice
+      const coveredServiceIds = new Set(
+        galleryPhotos.map((p) => p.service_id).filter(Boolean)
+      )
+
+      // Services with photos not yet in the gallery
+      const servicePhotos: Photo[] = (servicesRes.data ?? [])
+        .filter((s) => !coveredServiceIds.has(s.id))
+        .map((s) => ({
+          id: `svc-${s.id}`,
+          storage_path: s.photo_path!,
+          category: s.category,
+          caption: s.name,
+          description: s.description ?? null,
+          is_featured: false,
+          service_id: s.id,
+          services: { name: s.name, category: s.category },
+        }))
+
+      setPhotos([...galleryPhotos, ...servicePhotos])
       setLoading(false)
     }
 
